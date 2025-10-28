@@ -213,67 +213,23 @@ game_engine/
 
 ## Documentation
 
-Comprehensive documentation is available in the repository:
+Comprehensive documentation for the API can be found in the [project website](https://jackgaff.github.io) directory after building. The documentation covers:
 
-- **[API Reference](./API_REFERENCE.md)**: Complete Lua API documentation with examples
-- **[Architecture](./ARCHITECTURE.md)**: Engine design, subsystems, and data flow
-- **[Code Standards](./CODE_STANDARDS.md)**: Coding conventions and best practices
-- **[Contributing Guide](./CONTRIBUTING.md)**: How to contribute to the project
-- **[Changelog](./CHANGELOG.md)**: Version history and release notes
-
-### Quick Links
-
-- [Component Lifecycle](./API_REFERENCE.md#component-lifecycle)
-- [Physics System](./ARCHITECTURE.md#physics-system)
-- [Rendering Pipeline](./ARCHITECTURE.md#rendering-pipeline)
-- [Scripting Examples](./API_REFERENCE.md#complete-example)
-
-## Examples
-
-Check out example components and scenes in `resources/` directory (when available):
-- **Platformer**: Basic platformer with physics
-- **Shooter**: Top-down shooter with raycasting
-- **UI Demo**: User interface and HUD examples
-
-## Performance
-
-Typical performance on modern hardware (Release build, 1080p):
-- **1000+ actors** with components: 60 FPS
-- **10000+ sprites** per frame: 60 FPS
-- **100 physics bodies**: 60 FPS with Box2D simulation
-
-## Roadmap
-
-See [CHANGELOG.md](./CHANGELOG.md) for planned features:
-
-- ✅ v1.0: Core engine, physics, scripting, rendering (RELEASED)
-- 🚧 v1.1: Particle system, tilemaps, animations (Q1 2026)
-- 📋 v1.2: Level editor, prefabs, asset pipeline (Q2 2026)
-- 💭 v2.0: ECS architecture, multi-threading, Vulkan (Future)
+- Custom CMake feature set
+- Engine API reference
+- Component system usage
+- Physics system
+- Audio system
+- Rendering capabilities
+- Scripting interface
 
 ## License
 
-This project is licensed under the **MIT License** – see the [LICENSE](./LICENSE) file for details.
-
-You are free to use FR-Ocean Engine for:
-- ✅ Commercial projects
-- ✅ Personal projects
-- ✅ Educational purposes
-- ✅ Modification and distribution
+This project is licensed under the (not sure yet) License – see the LICENSE file for details.
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
-
-**Ways to contribute**:
-- 🐛 Report bugs and issues
-- 💡 Suggest new features
-- 📝 Improve documentation
-- 🔧 Submit bug fixes
-- ✨ Add new features
-- 🎮 Create example games
-
-**Good first issues**: Look for the `good-first-issue` label on GitHub.
+n / a at the moment
 
 ## Credits
 
@@ -286,38 +242,7 @@ This engine utilizes the following open‑source libraries:
 - [GLM](https://github.com/g-truc/glm) – Mathematics library
 - [RapidJSON](https://rapidjson.org/) – JSON parser / generator
 
-## Community
+## Contact
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/jackgaff/fr-ocean-engine/issues)
-- **Discussions**: [Ask questions and share ideas](https://github.com/jackgaff/fr-ocean-engine/discussions)
-- **Email**: jackgaff@umich.edu
-
-## Acknowledgments
-
-FR-Ocean Engine is built on the shoulders of giants. Special thanks to the developers of:
-
-- [SDL2](https://www.libsdl.org/) – Cross-platform multimedia library
-- [Box2D](https://box2d.org/) – The industry-standard 2D physics engine
-- [Lua](https://www.lua.org/) – Fast, elegant scripting language
-- [LuaBridge](https://github.com/vinniefalco/LuaBridge) – Seamless C++-Lua binding
-- [GLM](https://github.com/g-truc/glm) – OpenGL Mathematics library
-- [RapidJSON](https://rapidjson.org/) – Fast JSON parser and generator
-
-## Made With FR-Ocean Engine
-
-Share your projects made with FR-Ocean Engine! Open a PR to add your game to this list:
-
-- *Your game here!*
-
----
-
-<p align="center">
-  <strong>FR-Ocean Engine</strong> • Built with ❤️ by Jack Gaffney
-</p>
-
-<p align="center">
-  <a href="https://github.com/jackgaff/fr-ocean-engine">⭐ Star on GitHub</a> •
-  <a href="https://github.com/jackgaff/fr-ocean-engine/fork">🍴 Fork</a> •
-  <a href="./CONTRIBUTING.md">🤝 Contribute</a>
-</p>
+If you have any questions or feedback, please open an issue on GitHub or contact jackgaff@umich.edu directly.
 
