@@ -7,15 +7,18 @@
 
 #include <iostream>
 #include "TextDB.hpp"
+#include "Logger.hpp"
+#include "EngineException.hpp"
 
 void TextDB::Init() {
     if (!initialized) {
         if (TTF_Init() != 0) {
-            std::cout << "SDL_ttf initialization failed: " << TTF_GetError() << std::endl;
-            exit(0);
+            std::string error = TTF_GetError();
+            LOG_FATAL("SDL_ttf initialization failed: " + error);
+            throw RenderException("SDL_ttf initialization failed: " + error);
         }
         initialized = true;
-        
+
         // Make sure fonts directory exists
         if (!std::filesystem::exists(fontPath)) {
             std::filesystem::create_directories(fontPath);
@@ -58,10 +61,10 @@ void TextDB::LoadFont(const std::string& fontName) {
     // Actual font loading happens on-demand in GetFont
     std::string fp = fontPath + fontName + ".ttf";
     if (!std::filesystem::exists(fp)) {
-        std::cout << "error: font " << fontName << " missing";
-        exit(0);
+        LOG_FATAL("Font missing: " + fontName);
+        throw ResourceNotFoundException("font", fontName);
     }
-    
+
     // Load the default size font for backward compatibility
     GetFont(fontName, 16);
 }
@@ -75,20 +78,21 @@ TTF_Font* TextDB::GetFont(const std::string& fontName, int fontSize) {
             return sizeIt->second; // Return existing font
         }
     }
-    
+
     // Load the font
     std::string fp = fontPath + fontName + ".ttf";
     if (!std::filesystem::exists(fp)) {
-        std::cout << "error: font " << fontName << " missing";
-        exit(0);
+        LOG_FATAL("Font missing: " + fontName);
+        throw ResourceNotFoundException("font", fontName);
     }
-    
+
     TTF_Font* font = TTF_OpenFont(fp.c_str(), fontSize);
     if (!font) {
-        std::cout << "error: text render failed. Cannot load font " << fontName << " size " << fontSize;
-        exit(0);
+        std::string error = "Cannot load font " + fontName + " size " + std::to_string(fontSize);
+        LOG_FATAL(error);
+        throw RenderException(error);
     }
-    
+
     // Store and return the font
     fonts[fontName][fontSize] = font;
     return font;

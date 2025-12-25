@@ -24,7 +24,7 @@
 
 
 Engine::Engine() {
-    cleanColor = ConfigManager::getClearColor();
+    cleanColor = ConfigManager::GetClearColor();
     TextDB::Init();
     Input::Init();
     AudioDB::Init();

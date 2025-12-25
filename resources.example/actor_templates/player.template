@@ -1,0 +1,21 @@
+{
+    "name": "Player",
+    "components": {
+        "PlayerController": {
+            "type": "PlayerController",
+            "speed": 5.0,
+            "fire_rate": 0.2
+        },
+        "Rigidbody": {
+            "type": "Rigidbody",
+            "body_type": "kinematic",
+            "has_collider": false,
+            "has_trigger": true,
+            "trigger_type": "box",
+            "trigger_width": 0.4,
+            "trigger_height": 0.4,
+            "x": 0,
+            "y": 2
+        }
+    }
+}

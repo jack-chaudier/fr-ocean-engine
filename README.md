@@ -1,39 +1,20 @@
-<p align="center">
-  <img src="./fr-ocean-logo.png" alt="FR-Ocean Engine Logo" width="200"/>
-</p>
+# FR-Ocean Engine
 
-<h1 align="center">FR-Ocean Engine</h1>
+A professional 2D game engine built with C++17 and Lua scripting.
 
-<p align="center">
-  <strong>A professional 2D game engine built with C++17 and Lua scripting</strong>
-</p>
-
-<p align="center">
-  <a href="#features">Features</a> •
-  <a href="#quickstart">Quickstart</a> •
-  <a href="#documentation">Documentation</a> •
-  <a href="#examples">Examples</a> •
-  <a href="#contributing">Contributing</a> •
-  <a href="#license">License</a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/C%2B%2B-17-blue.svg" alt="C++17"/>
-  <img src="https://img.shields.io/badge/Lua-5.4-blue.svg" alt="Lua 5.4"/>
-  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg" alt="Platform"/>
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT License"/>
-  <img src="https://img.shields.io/badge/Version-1.0.0-orange.svg" alt="Version"/>
-</p>
-
----
+![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)
+![Lua 5.4](https://img.shields.io/badge/Lua-5.4-blue.svg)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)
 
 ## Overview
 
-**FR-Ocean Engine** is a powerful, professional-grade 2D game engine designed for rapid game development. With a **component-based architecture**, **Lua scripting**, and **Box2D physics**, it provides everything you need to create sophisticated 2D games.
+FR-Ocean Engine is a professional-grade 2D game engine designed for rapid game development. With a component-based architecture, Lua scripting, and Box2D physics, it provides everything you need to create sophisticated 2D games.
 
 Built with modern C++17 and industry-standard libraries, FR-Ocean Engine combines performance with ease of use, making it ideal for both indie developers and students learning game development.
 
-### Why FR-Ocean Engine?
+### Key Features
 
 - **Component-Based**: Flexible actor-component architecture inspired by Unity
 - **Lua Scripting**: Write game logic in Lua for rapid iteration
@@ -45,175 +26,162 @@ Built with modern C++17 and industry-standard libraries, FR-Ocean Engine combine
 
 ## Features
 
-### 🎮 Core Engine
-- **Component-Based Architecture**: Build games using reusable, composable components
-- **Scene Management**: JSON-based scene definitions with hot-swapping support
-- **Actor System**: Dynamic game objects with runtime component addition/removal
-- **Modern C++17**: Leverages latest C++ features for performance and safety
-- **Cross-Platform**: Unified codebase for Windows, macOS, and Linux
+### Core Engine
+- Component-based architecture with reusable, composable components
+- JSON-based scene definitions with hot-swapping support
+- Dynamic game objects with runtime component addition/removal
+- Modern C++17 with unified codebase for all platforms
 
-### 🎨 Rendering
-- **2D Sprite Rendering**: Hardware-accelerated rendering via SDL2
-- **Deferred Rendering Pipeline**: Batched, sorted draw calls for optimal performance
-- **Camera System**: Position and zoom control with world/screen space rendering
-- **Z-Order Sorting**: Full control over sprite layering
-- **Transform Support**: Position, rotation, scale, and pivot points
-- **Color Modulation**: RGBA tint and alpha blending
-- **TrueType Fonts**: High-quality text rendering with SDL2_ttf
-- **UI Rendering**: Screen-space rendering that ignores camera transforms
+### Rendering
+- Hardware-accelerated 2D sprite rendering via SDL2
+- Deferred rendering pipeline with batched, sorted draw calls
+- Camera system with position and zoom control
+- Z-order sorting for sprite layering
+- Transform support (position, rotation, scale, pivot)
+- RGBA color modulation and alpha blending
+- TrueType font rendering with SDL2_ttf
+- Screen-space UI rendering
 
-### ⚡ Physics
-- **Box2D Integration**: Industry-standard 2D physics simulation
-- **Body Types**: Dynamic, kinematic, and static bodies
-- **Collision Shapes**: Box and circle colliders
-- **Trigger Volumes**: Sensor-based overlap detection
-- **Collision Callbacks**: OnCollisionEnter/Stay/Exit events
-- **Raycasting**: Single and multi-hit raycasts for line-of-sight checks
-- **Physics Properties**: Configurable friction, bounciness, density, gravity
+### Physics
+- Box2D integration for industry-standard 2D physics
+- Dynamic, kinematic, and static body types
+- Box and circle collision shapes
+- Trigger volumes for sensor-based overlap detection
+- Collision callbacks (OnCollisionEnter/Stay/Exit)
+- Single and multi-hit raycasting
 
-### 🎵 Audio
-- **Multi-Channel Mixing**: 16 simultaneous audio channels via SDL2_mixer
-- **Format Support**: WAV, OGG, MP3 playback
-- **Looping**: Seamless audio looping for music
-- **Volume Control**: Per-channel volume adjustment
-- **Sound Effects**: Low-latency playback for game events
+### Audio
+- Multi-channel mixing with 16 simultaneous channels via SDL2_mixer
+- WAV, OGG, and MP3 format support
+- Seamless audio looping for music
+- Per-channel volume control
 
-### 📜 Scripting
-- **Lua 5.4**: Fast, lightweight scripting language
-- **LuaBridge**: Seamless C++-Lua integration
-- **Component Lifecycle**: OnStart, OnUpdate, OnLateUpdate, OnDestroy callbacks
-- **Full API Access**: Complete access to engine systems from Lua
-- **Hot Reloading**: Edit Lua scripts and see changes instantly
-- **Prototype-Based**: Component inheritance via Lua metatables
+### Scripting
+- Lua 5.4 with LuaBridge C++ integration
+- Component lifecycle callbacks (OnStart, OnUpdate, OnLateUpdate, OnDestroy)
+- Full API access to engine systems from Lua
+- Component inheritance via Lua metatables
 
-### 🛠️ Developer Tools
-- **JSON Configuration**: Data-driven design with JSON config files
-- **CMake Build System**: Modern, cross-platform build setup
-- **Vendored Dependencies**: No external package managers required
-- **Comprehensive Docs**: API reference, architecture guide, tutorials
-- **Debug Logging**: Built-in logging system for development
-- **Pixel Drawing**: Debugging visualization tools
+### Developer Tools
+- Data-driven design with JSON configuration
+- Modern CMake build system
+- Vendored dependencies (no external package managers required)
+- Built-in logging system with multiple severity levels
+- Debug pixel drawing for visualization
 
 ## Requirements
 
 ### Windows
-- Visual Studio 2019 or newer
-- CMake 3.16+
+- Visual Studio 2019 or newer
+- CMake 3.16+
 
 ### macOS
-- Xcode 12+ or Command Line Tools
-- CMake 3.16+
+- Xcode 12+ or Command Line Tools
+- CMake 3.16+
 
 ### Linux
-- GCC 9+ or Clang 9+
-- CMake 3.16+
+- GCC 9+ or Clang 9+
+- CMake 3.16+
 - SDL2, SDL2_image, SDL2_mixer, SDL2_ttf development packages
 
 ## Installation
 
-### Pre‑Built Binaries
-
-1. Download the latest release for your platform from the [Releases](https://github.com/jackgaff/game_engine/releases) page
-2. Extract the archive to your desired location
-3. Run the included examples to verify installation
-
 ### Building from Source
 
-#### Windows
-
+**Windows:**
 ```bash
 git clone https://github.com/jackgaff/fr-ocean-engine.git
 cd fr-ocean-engine
-mkdir build
-cd build
+mkdir build && cd build
 cmake -G "Visual Studio 17 2022" ..
 cmake --build . --config Release
-cmake --install . --config Release    # optional system‑wide install
-cpack                                  # create .zip / .tgz packages
 ```
 
-#### macOS
-
+**macOS:**
 ```bash
 git clone https://github.com/jackgaff/fr-ocean-engine.git
 cd fr-ocean-engine
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 cmake --build . --config Release
-sudo cmake --install . --config Release   # optional install
-sudo cpack                                 # create .tar.gz / .zip packages
 ```
 
 For Xcode project generation:
-
 ```bash
 cmake -G Xcode ..
 ```
 
-#### Linux
-
+**Linux:**
 ```bash
 git clone https://github.com/jackgaff/fr-ocean-engine.git
 cd fr-ocean-engine
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 make
-sudo make install          # optional install
-sudo cpack                 # create .tar.gz / .zip packages
+```
+
+The executable outputs to `build/bin/game_engine` with resources copied to `build/bin/resources/`.
+
+## Command-Line Options
+
+```
+./game_engine [options]
+
+Options:
+  --resources <path>  Override resources directory (default: resources/)
+  --debug             Enable debug logging
+  --version           Print version and exit
+  --help              Print help message
 ```
 
 ## Usage
 
-### Using Lua Scripts
-
-1. Create a Lua script for component behavior:
+### Creating a Lua Component
 
 ```lua
 -- ConstantMovement.lua
 ConstantMovement = {
     x_vel = 0,
     y_vel = 0,
-
-    OnStart = function(self)
-        self.transform = self.actor:GetComponent("Transform")
-    end,
-
-    OnUpdate = function(self)
-        self.transform.x = self.transform.x + self.x_vel
-        self.transform.y = self.transform.y + self.y_vel
-    end
 }
+
+function ConstantMovement:OnStart()
+    self.rigidbody = self.actor:GetComponent("Rigidbody")
+end
+
+function ConstantMovement:OnUpdate()
+    local pos = self.rigidbody:GetPosition()
+    pos.x = pos.x + self.x_vel
+    pos.y = pos.y + self.y_vel
+    self.rigidbody:SetPosition(pos)
+end
 ```
 
-## Project Structure
+### Project Structure
 
 ```
-game_engine/
-├── build/              # Build directory (generated)
-├── game_engine/        # Engine source code
-│   ├── Actor.cpp       # Actor implementation
-│   ├── Actor.hpp       # Actor header
-│   ├── ...             # Other engine sources
-├── resources/          # Example resources
-│   ├── audio/          # Audio files
-│   ├── component_types/# Lua component scripts
-│   ├── fonts/          # Font files
-│   ├── images/         # Image files
-│   └── scenes/         # Scene definition files
-├── vendor/             # Third‑party libraries
-│   ├── box2d/          # Box2D physics library
-│   ├── glm/            # Math library
-│   ├── lua/            # Lua scripting
-│   ├── ...             # Other dependencies
-├── CMakeLists.txt      # CMake build configuration
-└── README.md           # This file
+fr-ocean-engine/
+├── build/                  # Build directory (generated)
+├── game_engine/            # Engine source code
+│   ├── Actor.cpp/hpp       # Actor system
+│   ├── Engine.cpp/hpp      # Main game loop
+│   ├── ComponentDB.cpp/hpp # Lua component system
+│   └── ...                 # Other engine sources
+├── resources/              # Game resources
+│   ├── game.config         # Game configuration
+│   ├── rendering.config    # Rendering settings
+│   ├── scenes/             # Scene definition files
+│   ├── actor_templates/    # Actor templates
+│   ├── component_types/    # Lua component scripts
+│   ├── images/             # Image files
+│   ├── fonts/              # Font files
+│   └── audio/              # Audio files
+├── resources.example/      # Example Space Shooter game
+├── vendor/                 # Third-party libraries
+└── CMakeLists.txt          # CMake build configuration
 ```
 
 ## Documentation
-
-Comprehensive documentation is available in the repository:
 
 - **[API Reference](./API_REFERENCE.md)**: Complete Lua API documentation with examples
 - **[Architecture](./ARCHITECTURE.md)**: Engine design, subsystems, and data flow
@@ -221,70 +189,78 @@ Comprehensive documentation is available in the repository:
 - **[Contributing Guide](./CONTRIBUTING.md)**: How to contribute to the project
 - **[Changelog](./CHANGELOG.md)**: Version history and release notes
 
-### Quick Links
-
-- [Component Lifecycle](./API_REFERENCE.md#component-lifecycle)
-- [Physics System](./ARCHITECTURE.md#physics-system)
-- [Rendering Pipeline](./ARCHITECTURE.md#rendering-pipeline)
-- [Scripting Examples](./API_REFERENCE.md#complete-example)
-
 ## Examples
 
-Check out example components and scenes in `resources/` directory (when available):
-- **Platformer**: Basic platformer with physics
-- **Shooter**: Top-down shooter with raycasting
-- **UI Demo**: User interface and HUD examples
+Check out the Space Shooter example in `resources.example/` which demonstrates:
+- Player movement and shooting
+- Enemy spawning and AI
+- Collision detection with triggers
+- Score tracking and game over state
+
+## Troubleshooting
+
+### "error: resources/ missing"
+Ensure you have a `resources/` directory containing `game.config` and `rendering.config`.
+
+### "error: font X missing"
+Font files must be placed in `resources/fonts/` with `.ttf` extension.
+
+### SDL initialization failed
+- **Windows**: Ensure SDL2.dll is in the same directory as the executable
+- **macOS**: SDL2 frameworks should be in `build/bin/Frameworks/`
+- **Linux**: Install SDL2 development packages: `sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev`
+
+### Lua component not loading
+- Check the component file exists in `resources/component_types/`
+- Verify the filename matches the type name (case-sensitive)
+- Check for Lua syntax errors in console output
 
 ## Performance
 
 Typical performance on modern hardware (Release build, 1080p):
-- **1000+ actors** with components: 60 FPS
-- **10000+ sprites** per frame: 60 FPS
-- **100 physics bodies**: 60 FPS with Box2D simulation
+- 1000+ actors with components: 60 FPS
+- 10000+ sprites per frame: 60 FPS
+- 100 physics bodies: 60 FPS with Box2D simulation
 
 ## Roadmap
 
 See [CHANGELOG.md](./CHANGELOG.md) for planned features:
 
-- ✅ v1.0: Core engine, physics, scripting, rendering (RELEASED)
-- 🚧 v1.1: Particle system, tilemaps, animations (Q1 2026)
-- 📋 v1.2: Level editor, prefabs, asset pipeline (Q2 2026)
-- 💭 v2.0: ECS architecture, multi-threading, Vulkan (Future)
+- **v1.0** [RELEASED]: Core engine, physics, scripting, rendering
+- **v1.1** [Planned]: Particle system, tilemaps, animations
+- **v1.2** [Planned]: Level editor, prefabs, asset pipeline
+- **v2.0** [Future]: ECS architecture, multi-threading
 
 ## License
 
-This project is licensed under the **MIT License** – see the [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
-You are free to use FR-Ocean Engine for:
-- ✅ Commercial projects
-- ✅ Personal projects
-- ✅ Educational purposes
-- ✅ Modification and distribution
+You are free to use FR-Ocean Engine for commercial projects, personal projects, educational purposes, and modification/distribution.
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+Contributions are welcome. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
-**Ways to contribute**:
-- 🐛 Report bugs and issues
-- 💡 Suggest new features
-- 📝 Improve documentation
-- 🔧 Submit bug fixes
-- ✨ Add new features
-- 🎮 Create example games
+Ways to contribute:
+- Report bugs and issues
+- Suggest new features
+- Improve documentation
+- Submit bug fixes
+- Add new features
+- Create example games
 
-**Good first issues**: Look for the `good-first-issue` label on GitHub.
+Look for the `good-first-issue` label on GitHub for beginner-friendly tasks.
 
 ## Credits
 
-This engine utilizes the following open‑source libraries:
+This engine utilizes the following open-source libraries:
 
-- [SDL2](https://www.libsdl.org/) – Simple DirectMedia Layer
-- [Box2D](https://box2d.org/) – 2D physics engine
-- [Lua](https://www.lua.org/) – Scripting language
-- [LuaBridge](https://github.com/vinniefalco/LuaBridge) – C++ ↔ Lua binding
-- [GLM](https://github.com/g-truc/glm) – Mathematics library
-- [RapidJSON](https://rapidjson.org/) – JSON parser / generator
+- [SDL2](https://www.libsdl.org/) - Simple DirectMedia Layer
+- [Box2D](https://box2d.org/) - 2D physics engine
+- [Lua](https://www.lua.org/) - Scripting language
+- [LuaBridge](https://github.com/vinniefalco/LuaBridge) - C++ to Lua binding
+- [GLM](https://github.com/g-truc/glm) - Mathematics library
+- [RapidJSON](https://rapidjson.org/) - JSON parser/generator
 
 ## Community
 
@@ -292,32 +268,10 @@ This engine utilizes the following open‑source libraries:
 - **Discussions**: [Ask questions and share ideas](https://github.com/jackgaff/fr-ocean-engine/discussions)
 - **Email**: jackgaff@umich.edu
 
-## Acknowledgments
-
-FR-Ocean Engine is built on the shoulders of giants. Special thanks to the developers of:
-
-- [SDL2](https://www.libsdl.org/) – Cross-platform multimedia library
-- [Box2D](https://box2d.org/) – The industry-standard 2D physics engine
-- [Lua](https://www.lua.org/) – Fast, elegant scripting language
-- [LuaBridge](https://github.com/vinniefalco/LuaBridge) – Seamless C++-Lua binding
-- [GLM](https://github.com/g-truc/glm) – OpenGL Mathematics library
-- [RapidJSON](https://rapidjson.org/) – Fast JSON parser and generator
-
-## Made With FR-Ocean Engine
-
-Share your projects made with FR-Ocean Engine! Open a PR to add your game to this list:
-
-- *Your game here!*
-
 ---
 
-<p align="center">
-  <strong>FR-Ocean Engine</strong> • Built with ❤️ by Jack Gaffney
-</p>
+FR-Ocean Engine - Built by Jack Gaffney
 
-<p align="center">
-  <a href="https://github.com/jackgaff/fr-ocean-engine">⭐ Star on GitHub</a> •
-  <a href="https://github.com/jackgaff/fr-ocean-engine/fork">🍴 Fork</a> •
-  <a href="./CONTRIBUTING.md">🤝 Contribute</a>
-</p>
-
+[Star on GitHub](https://github.com/jackgaff/fr-ocean-engine) |
+[Fork](https://github.com/jackgaff/fr-ocean-engine/fork) |
+[Contribute](./CONTRIBUTING.md)

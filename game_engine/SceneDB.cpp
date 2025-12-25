@@ -11,6 +11,8 @@
 #include "Actor.hpp"
 #include "RigidbodyWorld.hpp"
 #include "Rigidbody.hpp"
+#include "Logger.hpp"
+#include "EngineException.hpp"
 #include <iostream>
 #include <filesystem>
 #include <algorithm>
@@ -39,7 +41,7 @@ void SceneDB::DontDestroy(Actor* actor) {
 }
 
 void SceneDB::loadScene() {
-    std::string scene_to_load = ConfigManager::getInitialScene();
+    std::string scene_to_load = ConfigManager::GetInitialScene();
     if (!next_scene_to_load.empty()) {
         scene_to_load = next_scene_to_load;
         next_scene_to_load = "";
@@ -50,8 +52,8 @@ void SceneDB::loadScene() {
     std::string full_path = scene_path + scene_to_load + ".scene";
 
     if (!std::filesystem::exists(full_path)) {
-        std::cout << "error: scene " << scene_to_load << " is missing";
-        exit(0);
+        LOG_FATAL("Scene missing: " + scene_to_load);
+        throw ResourceNotFoundException("scene", scene_to_load);
     }
     
     std::vector<std::unique_ptr<Actor>> persistent_actors;
@@ -145,8 +147,8 @@ void SceneDB::loadTemplate(const std::string &template_name, Actor * actor) {
     if (templateCache.find(template_name) == templateCache.end()) {
         std::string template_path = "resources/actor_templates/" + template_name + ".template";
         if (!std::filesystem::exists(template_path)) {
-            std::cout << "error: actor template " << template_name << " is missing";
-            exit(0);
+            LOG_FATAL("Actor template missing: " + template_name);
+            throw ResourceNotFoundException("actor template", template_name);
         }
 
         templateCache[template_name] = rapidjson::Document();

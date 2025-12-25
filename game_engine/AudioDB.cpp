@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 #include "AudioDB.hpp"
+#include "Logger.hpp"
+#include "EngineException.hpp"
 
 void AudioDB::Init() {
     AudioHelper::Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
@@ -19,9 +21,9 @@ void AudioDB::PlayChannel(int channel, const std::string &audio_clip_name, bool 
     if (loaded_audio.find(audio_clip_name) == loaded_audio.end()) {
         std::string pathWav = "resources/audio/" + audio_clip_name + ".wav";
         std::string pathOgg = "resources/audio/" + audio_clip_name + ".ogg";
-        
+
         std::string f2l;
-        
+
         if (std::filesystem::exists(pathWav)) {
             f2l = pathWav;
         }
@@ -29,14 +31,14 @@ void AudioDB::PlayChannel(int channel, const std::string &audio_clip_name, bool 
             f2l = pathOgg;
         }
         else {
-            std::cout << "error: failed to play audio clip " << audio_clip_name;
-            exit(0);
+            LOG_FATAL("Audio clip missing: " + audio_clip_name);
+            throw ResourceNotFoundException("audio clip", audio_clip_name);
         }
         loaded_audio[audio_clip_name] = AudioHelper::Mix_LoadWAV(f2l.c_str());
-        
+
         if (!loaded_audio[audio_clip_name]) {
-            std::cout << "error: failed to play audio clip " << audio_clip_name;
-            exit(0);
+            LOG_FATAL("Failed to load audio clip: " + audio_clip_name);
+            throw AudioException("Failed to load audio clip: " + audio_clip_name);
         }
     }
     AudioHelper::Mix_PlayChannel(channel, loaded_audio[audio_clip_name], loop);

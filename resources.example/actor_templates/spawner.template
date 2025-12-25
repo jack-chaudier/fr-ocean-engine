@@ -1,0 +1,10 @@
+{
+    "name": "EnemySpawner",
+    "components": {
+        "EnemySpawner": {
+            "type": "EnemySpawner",
+            "spawn_rate": 2.0,
+            "max_enemies": 8
+        }
+    }
+}

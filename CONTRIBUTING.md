@@ -415,7 +415,7 @@ Contributors will be acknowledged in:
 - Release notes
 - Annual contributor highlights
 
-Thank you for contributing to FR-Ocean Engine! 🎮🌊
+Thank you for contributing to FR-Ocean Engine!
 
 ---
 

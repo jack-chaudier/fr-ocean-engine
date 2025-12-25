@@ -1,0 +1,23 @@
+{
+    "actors": [
+        {
+            "name": "Player",
+            "template": "player"
+        },
+        {
+            "name": "EnemySpawner",
+            "template": "spawner"
+        },
+        {
+            "name": "GameManager",
+            "components": {
+                "GameManager": {
+                    "type": "GameManager"
+                },
+                "ScoreManager": {
+                    "type": "ScoreManager"
+                }
+            }
+        }
+    ]
+}

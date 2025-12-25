@@ -7,6 +7,8 @@
 
 #include "ImageDB.hpp"
 #include "SDL2_image/SDL_image.h"
+#include "Logger.hpp"
+#include "EngineException.hpp"
 #include <iostream>
 #include <filesystem>
 #include <cstdlib>
@@ -32,19 +34,19 @@ ImageDB::~ImageDB() {
 SDL_Texture* ImageDB::GetTexture(const std::string& imageName) {
     auto it = textureMap.find(imageName);
     if (it != textureMap.end()) return it->second;
-    
+
     std::string path = "resources/images/" + imageName + ".png";
     if (!std::filesystem::exists(path)) {
-        std::cout << "error: missing image " << imageName << "\n";
-        exit(0);
+        LOG_FATAL("Image missing: " + imageName);
+        throw ResourceNotFoundException("image", imageName);
     }
-    
+
     SDL_Texture* tex = IMG_LoadTexture(Renderer::getSDLRenderer(), path.c_str());
     if (!tex) {
-        std::cout << "error: failed to load image " << imageName << "\n";
-        exit(0);
+        LOG_FATAL("Failed to load image: " + imageName);
+        throw RenderException("Failed to load image: " + imageName);
     }
-    
+
     textureMap[imageName] = tex;
     return tex;
 }

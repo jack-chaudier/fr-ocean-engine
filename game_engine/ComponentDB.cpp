@@ -16,6 +16,8 @@
 #include "Rigidbody.hpp"
 #include "box2d/box2d.h"
 #include "PhysicsQuery.hpp"
+#include "Logger.hpp"
+#include "EngineException.hpp"
 
 void ComponentDB::Init() {
     using namespace luabridge;
@@ -234,15 +236,16 @@ std::shared_ptr<luabridge::LuaRef> ComponentDB::CreateComponent(const std::strin
     if (componentTypeCache.find(type) == componentTypeCache.end()) {
         std::string lua_path = "resources/component_types/" + type + ".lua";
         if (!std::filesystem::exists(lua_path)) {
-            std::cout << "error: failed to locate component " << type;
-            exit(0);
+            LOG_FATAL("Component type missing: " + type);
+            throw ScriptException("Component type not found: " + type);
         }
-        
+
         if (luaL_dofile(L, lua_path.c_str()) != LUA_OK) {
-            std::cout << "problem with lua file " << type;
-            exit(0);
+            std::string error = lua_tostring(L, -1);
+            LOG_FATAL("Lua error in component " + type + ": " + error);
+            throw ScriptException("Lua error in component " + type + ": " + error);
         }
-        
+
         componentTypeCache[type] = std::make_shared<luabridge::LuaRef>(luabridge::getGlobal(L, type.c_str()));
     }
     

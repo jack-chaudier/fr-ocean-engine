@@ -8,6 +8,8 @@
 #include <filesystem>
 #include "ConfigManager.hpp"
 #include "Actor.hpp"
+#include "Logger.hpp"
+#include "EngineException.hpp"
 
 
 ConfigManager::ConfigManager(const std::string &gameConfigPath, const std::string &renderConfigPath) {
@@ -15,20 +17,20 @@ ConfigManager::ConfigManager(const std::string &gameConfigPath, const std::strin
     ConfigManager::renderConfigPath = renderConfigPath;
 }
 
-void ConfigManager::load() {
+void ConfigManager::Load() {
     if (!std::filesystem::exists("resources")) {
-        std::cout << "error: resources/ missing";
-        exit(0);
+        LOG_FATAL("resources/ directory missing");
+        throw ConfigurationException("resources/ directory missing");
     }
-    
-    loadGame();
-    loadRender();
+
+    LoadGame();
+    LoadRender();
 }
 
-void ConfigManager::loadRender() {
+void ConfigManager::LoadRender() {
     if (std::filesystem::exists(renderConfigPath)) {
         EngineUtils::ReadJsonFile(renderConfigPath, renderDoc);
-        
+
         if (renderDoc.HasMember("x_resolution")) {
             resolution.x = renderDoc["x_resolution"].GetInt();
         }
@@ -47,12 +49,12 @@ void ConfigManager::loadRender() {
     }
 }
 
-void ConfigManager::loadGame() {
+void ConfigManager::LoadGame() {
     if (!std::filesystem::exists("resources/game.config")) {
-        std::cout << "error: resources/game.config missing";
-        exit(0);
+        LOG_FATAL("resources/game.config missing");
+        throw ConfigurationException("resources/game.config missing");
     }
-    
+
     EngineUtils::ReadJsonFile(gameConfigPath, gameDoc);
     if (gameDoc.HasMember("game_title")) {
         gameTitle = gameDoc["game_title"].GetString();
@@ -60,24 +62,24 @@ void ConfigManager::loadGame() {
     if (gameDoc.HasMember("initial_scene")) {
         initialScene = gameDoc["initial_scene"].GetString();
     } else {
-        std::cout << "error: initial_scene unspecified";
-        exit(0);
+        LOG_FATAL("initial_scene not specified in game.config");
+        throw ConfigurationException("initial_scene not specified in game.config");
     }
 }
 
 
-std::string ConfigManager::getGameTitle() {
+std::string ConfigManager::GetGameTitle() {
     return gameTitle;
 }
 
-glm::ivec2 ConfigManager::getResolution() {
+glm::ivec2 ConfigManager::GetResolution() {
     return resolution;
 }
 
-glm::ivec3 ConfigManager::getClearColor() {
+glm::ivec3 ConfigManager::GetClearColor() {
     return color;
 }
 
-std::string ConfigManager::getInitialScene() {
+std::string ConfigManager::GetInitialScene() {
     return initialScene;
 }
