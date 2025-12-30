@@ -9,6 +9,7 @@
 #include "TextDB.hpp"
 #include "Logger.hpp"
 #include "EngineException.hpp"
+#include "ConfigManager.hpp"
 
 void TextDB::Init() {
     if (!initialized) {
@@ -20,8 +21,9 @@ void TextDB::Init() {
         initialized = true;
 
         // Make sure fonts directory exists
-        if (!std::filesystem::exists(fontPath)) {
-            std::filesystem::create_directories(fontPath);
+        std::string fontsDir = ConfigManager::GetResourcesPath() + "fonts/";
+        if (!std::filesystem::exists(fontsDir)) {
+            std::filesystem::create_directories(fontsDir);
         }
     }
 }
@@ -59,7 +61,7 @@ void TextDB::Shutdown() {
 void TextDB::LoadFont(const std::string& fontName) {
     // This method now just checks if the font file exists
     // Actual font loading happens on-demand in GetFont
-    std::string fp = fontPath + fontName + ".ttf";
+    std::string fp = ConfigManager::GetResourcesPath() + "fonts/" + fontName + ".ttf";
     if (!std::filesystem::exists(fp)) {
         LOG_FATAL("Font missing: " + fontName);
         throw ResourceNotFoundException("font", fontName);
@@ -80,7 +82,7 @@ TTF_Font* TextDB::GetFont(const std::string& fontName, int fontSize) {
     }
 
     // Load the font
-    std::string fp = fontPath + fontName + ".ttf";
+    std::string fp = ConfigManager::GetResourcesPath() + "fonts/" + fontName + ".ttf";
     if (!std::filesystem::exists(fp)) {
         LOG_FATAL("Font missing: " + fontName);
         throw ResourceNotFoundException("font", fontName);

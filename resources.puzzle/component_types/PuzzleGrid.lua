@@ -162,7 +162,7 @@ function PuzzleGrid:HandleInput()
                 -- First selection
                 self.selected_x = gx
                 self.selected_y = gy
-                Audio.Play(0, "click", false)
+                -- Audio.Play(0, "click", false)  -- Audio disabled
             else
                 -- Second selection - check if adjacent
                 local dx = math.abs(gx - self.selected_x)
@@ -175,7 +175,7 @@ function PuzzleGrid:HandleInput()
                     -- Not adjacent - new selection
                     self.selected_x = gx
                     self.selected_y = gy
-                    Audio.Play(0, "click", false)
+                    -- Audio.Play(0, "click", false)  -- Audio disabled
                 end
             end
         else
@@ -207,7 +207,7 @@ function PuzzleGrid:TrySwap(x1, y1, x2, y2)
     if #matches > 0 then
         -- Valid move - use a move
         self.moves_left = self.moves_left - 1
-        Audio.Play(1, "match", false)
+        -- Audio.Play(1, "match", false)  -- Audio disabled
 
         -- Process matches
         self:ProcessMatches(matches)
@@ -215,7 +215,7 @@ function PuzzleGrid:TrySwap(x1, y1, x2, y2)
         -- Invalid move - swap back
         self.grid[x2][y2] = self.grid[x1][y1]
         self.grid[x1][y1] = temp
-        Audio.Play(2, "invalid", false)
+        -- Audio.Play(2, "invalid", false)  -- Audio disabled
     end
 
     -- Clear selection

@@ -40,7 +40,11 @@ public:
     static glm::ivec3 GetClearColor();
     static std::string GetInitialScene();
 
+    static void SetResourcesPath(const std::string& path);
+    static std::string GetResourcesPath();
+
 private:
+    inline static std::string resourcesPath = "resources/";
     inline static glm::ivec3 color = {255, 255, 255};
     inline static glm::ivec2 resolution = {640, 360};
     inline static std::string gameConfigPath;

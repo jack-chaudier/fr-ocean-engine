@@ -49,8 +49,8 @@ void SceneDB::loadScene() {
     }
     
     current_scene_name = scene_to_load;
-    
-    std::string full_path = scene_path + scene_to_load + ".scene";
+
+    std::string full_path = ConfigManager::GetResourcesPath() + "scenes/" + scene_to_load + ".scene";
 
     if (!std::filesystem::exists(full_path)) {
         LOG_FATAL("Scene missing: " + scene_to_load);
@@ -146,7 +146,7 @@ void SceneDB::loadScene() {
 
 void SceneDB::loadTemplate(const std::string &template_name, Actor * actor) {
     if (templateCache.find(template_name) == templateCache.end()) {
-        std::string template_path = "resources/actor_templates/" + template_name + ".template";
+        std::string template_path = ConfigManager::GetResourcesPath() + "actor_templates/" + template_name + ".template";
         if (!std::filesystem::exists(template_path)) {
             LOG_FATAL("Actor template missing: " + template_name);
             throw ResourceNotFoundException("actor template", template_name);

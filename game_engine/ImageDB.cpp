@@ -9,6 +9,7 @@
 #include "SDL2_image/SDL_image.h"
 #include "Logger.hpp"
 #include "EngineException.hpp"
+#include "ConfigManager.hpp"
 #include <iostream>
 #include <filesystem>
 #include <cstdlib>
@@ -35,7 +36,7 @@ SDL_Texture* ImageDB::GetTexture(const std::string& imageName) {
     auto it = textureMap.find(imageName);
     if (it != textureMap.end()) return it->second;
 
-    std::string path = "resources/images/" + imageName + ".png";
+    std::string path = ConfigManager::GetResourcesPath() + "images/" + imageName + ".png";
     if (!std::filesystem::exists(path)) {
         LOG_FATAL("Image missing: " + imageName);
         throw ResourceNotFoundException("image", imageName);

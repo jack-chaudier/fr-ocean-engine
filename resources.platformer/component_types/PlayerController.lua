@@ -24,7 +24,7 @@ function PlayerController:OnUpdate()
     local ray_origin = Vector2(pos.x, pos.y + 0.35)
     local ray_dir = Vector2(0, 1)
     local hit = Physics.Raycast(ray_origin, ray_dir, 0.2)
-    self.is_grounded = (hit.actor ~= nil)
+    self.is_grounded = (hit ~= nil and hit.actor ~= nil)
 
     -- Horizontal movement
     local move_x = 0
@@ -62,7 +62,8 @@ function PlayerController:Die()
     Scene.Load(Scene.GetCurrent())
 end
 
-function PlayerController:OnTriggerEnter(other)
+function PlayerController:OnTriggerEnter(collision)
+    local other = collision.other
     if other:GetName() == "Enemy" then
         local my_pos = self.rigidbody:GetPosition()
         local enemy_rb = other:GetComponent("Rigidbody")

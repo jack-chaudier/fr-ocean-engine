@@ -89,6 +89,7 @@ int main(int argc, char* argv[]) {
         std::string gameConfigPath = resourcesPath + "game.config";
         std::string renderConfigPath = resourcesPath + "rendering.config";
 
+        ConfigManager::SetResourcesPath(resourcesPath);
         ConfigManager config(gameConfigPath, renderConfigPath);
         ConfigManager::Load();
 

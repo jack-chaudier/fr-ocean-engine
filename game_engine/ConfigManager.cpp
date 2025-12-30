@@ -17,10 +17,21 @@ ConfigManager::ConfigManager(const std::string &gameConfigPath, const std::strin
     ConfigManager::renderConfigPath = renderConfigPath;
 }
 
+void ConfigManager::SetResourcesPath(const std::string& path) {
+    resourcesPath = path;
+    if (!resourcesPath.empty() && resourcesPath.back() != '/') {
+        resourcesPath += '/';
+    }
+}
+
+std::string ConfigManager::GetResourcesPath() {
+    return resourcesPath;
+}
+
 void ConfigManager::Load() {
-    if (!std::filesystem::exists("resources")) {
-        LOG_FATAL("resources/ directory missing");
-        throw ConfigurationException("resources/ directory missing");
+    if (!std::filesystem::exists(resourcesPath)) {
+        LOG_FATAL(resourcesPath + " directory missing");
+        throw ConfigurationException(resourcesPath + " directory missing");
     }
 
     LoadGame();
@@ -50,9 +61,10 @@ void ConfigManager::LoadRender() {
 }
 
 void ConfigManager::LoadGame() {
-    if (!std::filesystem::exists("resources/game.config")) {
-        LOG_FATAL("resources/game.config missing");
-        throw ConfigurationException("resources/game.config missing");
+    std::string gameConfigFile = resourcesPath + "game.config";
+    if (!std::filesystem::exists(gameConfigFile)) {
+        LOG_FATAL(gameConfigFile + " missing");
+        throw ConfigurationException(gameConfigFile + " missing");
     }
 
     EngineUtils::ReadJsonFile(gameConfigPath, gameDoc);

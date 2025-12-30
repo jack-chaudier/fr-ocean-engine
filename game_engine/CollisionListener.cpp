@@ -40,14 +40,12 @@ void CollisionListener::dispatch(b2Contact* c, bool isEnter)
         callLua(actorB, actorA, pt, rawRelVel, n, isEnter, /*isTrigger=*/false);
     }
     // ──────── TRIGGER LIFECYCLE ───────────────────────
-    // Only between *two* sensor fixtures
-    else if (sensorA && sensorB) {
+    // Between any fixtures where at least one is a sensor
+    else if (sensorA || sensorB) {
         // point & normal always sentinel for triggers
         callLua(actorA, actorB, sentinel, rawRelVel, sentinel, isEnter, /*isTrigger=*/true);
         callLua(actorB, actorA, sentinel, rawRelVel, sentinel, isEnter, /*isTrigger=*/true);
     }
-    // ──────── mixed sensor/collider ────────────────────
-    // else: one sensor + one collider → ignore entirely
 }
 
 void CollisionListener::callLua(Actor* self, Actor* other,

@@ -24,6 +24,7 @@
 #include "Tween.hpp"
 #include "Transform.hpp"
 #include "CollisionLayers.hpp"
+#include "ConfigManager.hpp"
 
 void ComponentDB::Init() {
     using namespace luabridge;
@@ -235,13 +236,19 @@ void ComponentDB::loadComponents(Actor * a, const rapidjson::Value &doc) {
         
         if (a->components.find(comp_key) != a->components.end()) {
             luabridge::LuaRef& existing_table = *(a->components[comp_key]);
-            
+
+            // Determine component type: use "type" field if present, otherwise use the key name
+            std::string comp_type = comp_key;
+            if (comp_data.HasMember("type") && comp_data["type"].IsString()) {
+                comp_type = comp_data["type"].GetString();
+            }
+
             for (auto it_2 = comp_data.MemberBegin(); it_2 != comp_data.MemberEnd(); ++it_2) {
                 std::string prop = it_2->name.GetString();
                 if (prop == "type")
                     continue;
-                
-                if (comp_data["type"].GetString() == std::string("Rigidbody")) {
+
+                if (comp_type == "Rigidbody") {
                     overrideRigidbodyfValue(existing_table, prop, it_2->value);
                 }
                 else
@@ -249,7 +256,11 @@ void ComponentDB::loadComponents(Actor * a, const rapidjson::Value &doc) {
             }
         }
         else {
-            std::string comp_type = comp_data["type"].GetString();
+            // Use "type" field if present, otherwise use the key name as component type
+            std::string comp_type = comp_key;
+            if (comp_data.HasMember("type") && comp_data["type"].IsString()) {
+                comp_type = comp_data["type"].GetString();
+            }
             if (comp_type == "Rigidbody") rigidbody = true;
             
             std::shared_ptr<luabridge::LuaRef> component_ref = CreateComponent(comp_type, comp_key);
@@ -296,7 +307,7 @@ std::shared_ptr<luabridge::LuaRef> ComponentDB::CreateComponent(const std::strin
     }
     
     if (componentTypeCache.find(type) == componentTypeCache.end()) {
-        std::string lua_path = "resources/component_types/" + type + ".lua";
+        std::string lua_path = ConfigManager::GetResourcesPath() + "component_types/" + type + ".lua";
         if (!std::filesystem::exists(lua_path)) {
             LOG_FATAL("Component type missing: " + type);
             throw ScriptException("Component type not found: " + type);

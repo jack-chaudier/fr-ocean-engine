@@ -11,6 +11,7 @@
 #include "AudioDB.hpp"
 #include "Logger.hpp"
 #include "EngineException.hpp"
+#include "ConfigManager.hpp"
 
 void AudioDB::Init() {
     AudioHelper::Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
@@ -20,8 +21,8 @@ void AudioDB::Init() {
 void AudioDB::PlayChannel(int channel, const std::string &audio_clip_name, bool does_loop) {
     int loop = does_loop ? -1 : 0;
     if (loaded_audio.find(audio_clip_name) == loaded_audio.end()) {
-        std::string pathWav = "resources/audio/" + audio_clip_name + ".wav";
-        std::string pathOgg = "resources/audio/" + audio_clip_name + ".ogg";
+        std::string pathWav = ConfigManager::GetResourcesPath() + "audio/" + audio_clip_name + ".wav";
+        std::string pathOgg = ConfigManager::GetResourcesPath() + "audio/" + audio_clip_name + ".ogg";
 
         std::string f2l;
 
