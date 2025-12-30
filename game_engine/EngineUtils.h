@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <memory>
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/document.h"
 #include "Logger.hpp"
@@ -41,10 +42,13 @@ public:
             throw ConfigurationException("Cannot open file: " + path);
         }
 
+        // RAII wrapper ensures file is closed even if an exception is thrown
+        auto file_closer = [](FILE* f) { if (f) std::fclose(f); };
+        std::unique_ptr<FILE, decltype(file_closer)> file_guard(file_pointer, file_closer);
+
         char buffer[65536];
         rapidjson::FileReadStream stream(file_pointer, buffer, sizeof(buffer));
         out_document.ParseStream(stream);
-        std::fclose(file_pointer);
 
         if (out_document.HasParseError()) {
             LOG_FATAL("JSON parse error in file: " + path);

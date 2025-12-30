@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 #include "AudioDB.hpp"
 #include "Logger.hpp"
 #include "EngineException.hpp"
@@ -49,6 +50,6 @@ void AudioDB::HaltChannel(int channel) {
 }
 
 void AudioDB::SetVolume(int channel, float volume) {
-    int vol = static_cast<int>(volume);
+    int vol = static_cast<int>(std::clamp(volume, 0.0f, 1.0f) * 128);
     AudioHelper::Mix_Volume(channel, vol);
 }

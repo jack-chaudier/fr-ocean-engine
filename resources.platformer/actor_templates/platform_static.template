@@ -1,0 +1,19 @@
+{
+    "name": "Platform",
+    "components": {
+        "Platform": {
+            "type": "Platform",
+            "platform_width": 2.0
+        },
+        "Rigidbody": {
+            "type": "Rigidbody",
+            "body_type": "static",
+            "has_collider": true,
+            "collider_type": "box",
+            "width": 2.0,
+            "height": 0.5,
+            "has_trigger": false,
+            "friction": 0.8
+        }
+    }
+}

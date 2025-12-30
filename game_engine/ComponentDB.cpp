@@ -18,6 +18,12 @@
 #include "PhysicsQuery.hpp"
 #include "Logger.hpp"
 #include "EngineException.hpp"
+#include "Time.hpp"
+#include "EventSystem.hpp"
+#include "Scheduler.hpp"
+#include "Tween.hpp"
+#include "Transform.hpp"
+#include "CollisionLayers.hpp"
 
 void ComponentDB::Init() {
     using namespace luabridge;
@@ -153,8 +159,64 @@ void ComponentDB::Init() {
             .addFunction("Load", &SceneDB::Load)
             .addFunction("GetCurrent", &SceneDB::GetCurrent)
             .addFunction("DontDestroy", &SceneDB::DontDestroy)
-        .endNamespace();
-        
+        .endNamespace()
+
+        // TIME API
+        .beginNamespace("Time")
+            .addFunction("GetDeltaTime", &Time::GetDeltaTime)
+            .addFunction("GetUnscaledDeltaTime", &Time::GetUnscaledDeltaTime)
+            .addFunction("GetTimeScale", &Time::GetTimeScale)
+            .addFunction("SetTimeScale", &Time::SetTimeScale)
+            .addFunction("GetTotalTime", &Time::GetTotalTime)
+            .addFunction("GetUnscaledTotalTime", &Time::GetUnscaledTotalTime)
+            .addFunction("GetFrameCount", &Time::GetFrameCount)
+        .endNamespace()
+
+        // EVENT SYSTEM
+        .beginNamespace("Event")
+            .addFunction("Emit", &EventSystem::Emit)
+            .addFunction("Subscribe", &EventSystem::Subscribe)
+            .addFunction("SubscribeOnce", &EventSystem::SubscribeOnce)
+            .addFunction("Unsubscribe", &EventSystem::Unsubscribe)
+            .addFunction("UnsubscribeAll", &EventSystem::UnsubscribeAll)
+        .endNamespace()
+
+        // TIMER/SCHEDULER
+        .beginNamespace("Timer")
+            .addFunction("After", &Scheduler::After)
+            .addFunction("Every", &Scheduler::Every)
+            .addFunction("Cancel", &Scheduler::Cancel)
+            .addFunction("CancelAll", &Scheduler::CancelAll)
+        .endNamespace()
+
+        // TWEEN SYSTEM
+        .beginNamespace("Tween")
+            .addFunction("To", &Tween::To)
+            .addFunction("Cancel", &Tween::Cancel)
+            .addFunction("CancelAll", &Tween::CancelAll)
+        .endNamespace()
+
+        // TRANSFORM COMPONENT
+        .beginClass<Transform>("Transform")
+            .addConstructor<void (*) (void)>()
+            .addProperty("x", &Transform::x)
+            .addProperty("y", &Transform::y)
+            .addProperty("rotation", &Transform::rotation)
+            .addProperty("scale_x", &Transform::scale_x)
+            .addProperty("scale_y", &Transform::scale_y)
+            .addFunction("GetPosition", &Transform::GetPosition)
+            .addFunction("SetPosition", &Transform::SetPosition)
+            .addFunction("Translate", &Transform::Translate)
+            .addFunction("GetRotation", &Transform::GetRotation)
+            .addFunction("SetRotation", &Transform::SetRotation)
+            .addFunction("Rotate", &Transform::Rotate)
+            .addFunction("GetScale", &Transform::GetScale)
+            .addFunction("SetScale", &Transform::SetScale)
+            .addFunction("SetUniformScale", &Transform::SetUniformScale)
+            .addFunction("GetUpDirection", &Transform::GetUpDirection)
+            .addFunction("GetRightDirection", &Transform::GetRightDirection)
+        .endClass();
+
     CDB.reserve(1000);
     componentTypeCache.reserve(50);
 }

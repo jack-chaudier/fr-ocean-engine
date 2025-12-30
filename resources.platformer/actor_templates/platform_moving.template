@@ -1,0 +1,19 @@
+{
+    "name": "MovingPlatform",
+    "components": {
+        "MovingPlatform": {
+            "type": "MovingPlatform",
+            "move_speed": 2.0,
+            "move_distance": 3.0
+        },
+        "Rigidbody": {
+            "type": "Rigidbody",
+            "body_type": "kinematic",
+            "has_collider": true,
+            "collider_type": "box",
+            "width": 2.0,
+            "height": 0.5,
+            "has_trigger": false
+        }
+    }
+}

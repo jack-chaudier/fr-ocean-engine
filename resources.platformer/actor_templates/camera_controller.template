@@ -1,0 +1,10 @@
+{
+    "name": "CameraController",
+    "components": {
+        "CameraFollow": {
+            "type": "CameraFollow",
+            "follow_speed": 5.0,
+            "offset_y": -1.0
+        }
+    }
+}

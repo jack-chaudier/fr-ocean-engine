@@ -1,0 +1,20 @@
+{
+    "actors": [
+        {
+            "name": "PuzzleManager",
+            "components": {
+                "PuzzleGrid": {
+                    "type": "PuzzleGrid",
+                    "grid_width": 6,
+                    "grid_height": 6,
+                    "num_piece_types": 4,
+                    "target_score": 300,
+                    "max_moves": 25
+                },
+                "UIManager": {
+                    "type": "UIManager"
+                }
+            }
+        }
+    ]
+}

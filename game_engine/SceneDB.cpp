@@ -16,6 +16,7 @@
 #include <iostream>
 #include <filesystem>
 #include <algorithm>
+#include <unordered_set>
 
 SceneDB::~SceneDB() { }
 
@@ -23,7 +24,7 @@ SceneDB::~SceneDB() { }
 void SceneDB::ReportError(const std::string& actor_name, const luabridge::LuaException& e) {
     std::string error_message = e.what();
     std::replace(error_message.begin(), error_message.end(), '\\', '/');
-    std::cout << "\033[31m" << actor_name << " : " << error_message << "\033[0m" << std::endl;
+    LOG_ERROR(actor_name + " : " + error_message);
 }
 
 void SceneDB::Load(const std::string& scene_name) {
@@ -218,9 +219,12 @@ void SceneDB::UpdateScene() {
 void SceneDB::ProcessSceneOnStart() {
     if (on_start_cache.empty())
         return;
-    auto cache_copy = on_start_cache;
-    
-    for (const auto& [cacheKey, compRef] : cache_copy) {
+
+    // Use std::move since we clear the cache at the end anyway
+    auto cache_to_process = std::move(on_start_cache);
+    on_start_cache.clear();
+
+    for (const auto& [cacheKey, compRef] : cache_to_process) {
         auto itt = actors.find(cacheKey.actorId);
         if (itt == actors.end()) continue;
         const auto& actor = itt->second;
@@ -239,28 +243,33 @@ void SceneDB::ProcessSceneOnStart() {
         }
         comp["on_start"] = true;
     }
-
-
-    on_start_cache.clear();
 }
 
 void SceneDB::ProcessSceneUpdate() {
     if (on_update_cache.empty()) return;
-    
-    auto cache_copy = on_update_cache;
-    
-    for (const auto& [cacheKey, compRef] : cache_copy) {
+
+    // Collect keys first to avoid issues if cache is modified during iteration
+    std::vector<ComponentKey> keys_to_process;
+    keys_to_process.reserve(on_update_cache.size());
+    for (const auto& [key, _] : on_update_cache) {
+        keys_to_process.push_back(key);
+    }
+
+    for (const auto& cacheKey : keys_to_process) {
+        auto cache_it = on_update_cache.find(cacheKey);
+        if (cache_it == on_update_cache.end()) continue;
+
         auto itt = actors.find(cacheKey.actorId);
         if (itt == actors.end()) continue;
         const auto& actor = itt->second;
         if (actor->destroyed) continue;
 
-        luabridge::LuaRef comp = *compRef;
-        
+        luabridge::LuaRef comp = *(cache_it->second);
+
         if (comp.isUserdata()) {
             continue;
         }
-        
+
         if (!comp["enabled"]) continue;
 
         if (comp["frame_added"] == Helper::GetFrameNumber() && comp["new_addition"]) continue;
@@ -276,15 +285,24 @@ void SceneDB::ProcessSceneUpdate() {
 
 void SceneDB::ProcessSceneLateUpdate() {
     if (on_late_update_cache.empty()) return;
-    auto cache_copy = on_late_update_cache;
-    
-    for (const auto& [cacheKey, compRef] : cache_copy) {
+
+    // Collect keys first to avoid issues if cache is modified during iteration
+    std::vector<ComponentKey> keys_to_process;
+    keys_to_process.reserve(on_late_update_cache.size());
+    for (const auto& [key, _] : on_late_update_cache) {
+        keys_to_process.push_back(key);
+    }
+
+    for (const auto& cacheKey : keys_to_process) {
+        auto cache_it = on_late_update_cache.find(cacheKey);
+        if (cache_it == on_late_update_cache.end()) continue;
+
         auto itt = actors.find(cacheKey.actorId);
         if (itt == actors.end()) continue;
         const auto& actor = itt->second;
         if (actor->destroyed) continue;
 
-        luabridge::LuaRef comp = *compRef;
+        luabridge::LuaRef comp = *(cache_it->second);
         if (!comp["enabled"]) continue;
 
         if (comp["frame_added"] == Helper::GetFrameNumber() && comp["new_addition"]) continue;
@@ -451,15 +469,28 @@ void SceneDB::DestroyActor(Actor* actor) {
 }
 
 void SceneDB::ActorsPendingDestruction() {
+    if (actors_to_destroy.empty()) return;
+
+    // Build set of IDs to destroy for O(1) lookup
+    std::unordered_set<uint64_t> destroy_set(
+        actors_to_destroy.begin(),
+        actors_to_destroy.end()
+    );
+
+    // Erase from actors map
     for (uint64_t id : actors_to_destroy) {
         actors.erase(id);
-        
-        auto it = std::find(actor_id_vec.begin(), actor_id_vec.end(), id);
-        if (it != actor_id_vec.end()) {
-            *it = actor_id_vec.back();
-            actor_id_vec.pop_back();
+    }
+
+    // Remove from actor_id_vec using single-pass O(n) approach
+    size_t write_idx = 0;
+    for (size_t read_idx = 0; read_idx < actor_id_vec.size(); ++read_idx) {
+        if (destroy_set.count(actor_id_vec[read_idx]) == 0) {
+            actor_id_vec[write_idx++] = actor_id_vec[read_idx];
         }
     }
+    actor_id_vec.resize(write_idx);
+
     actors_to_destroy.clear();
 }
 

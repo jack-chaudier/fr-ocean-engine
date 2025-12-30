@@ -1,0 +1,19 @@
+{
+    "name": "Enemy",
+    "components": {
+        "EnemyController": {
+            "type": "EnemyController",
+            "patrol_speed": 1.5,
+            "patrol_distance": 2.0
+        },
+        "Rigidbody": {
+            "type": "Rigidbody",
+            "body_type": "kinematic",
+            "has_collider": false,
+            "has_trigger": true,
+            "trigger_type": "box",
+            "trigger_width": 0.4,
+            "trigger_height": 0.4
+        }
+    }
+}

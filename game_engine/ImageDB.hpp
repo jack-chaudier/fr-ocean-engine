@@ -230,7 +230,7 @@ private:
     inline static size_t request_counter = 0;
 
     /// Pixel submission order counter
-    inline static  size_t pixel_reuest_counter = 0;
+    inline static size_t pixel_request_counter = 0;
 };
 
 #endif /* ImageDB_hpp */

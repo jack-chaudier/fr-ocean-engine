@@ -121,8 +121,8 @@ void TextDB::RenderQueuedTexts() {
         // Get (or load) the requested font
         TTF_Font* font = GetFont(req.fontName, req.fontSize);
         
-        // Render the text
-        SDL_Surface* surface = TTF_RenderText_Solid(font, req.content.c_str(), req.color);
+        // Render the text with anti-aliasing for better quality
+        SDL_Surface* surface = TTF_RenderText_Blended(font, req.content.c_str(), req.color);
         if (surface) {
             SDL_Texture* texture = SDL_CreateTextureFromSurface(Renderer::getSDLRenderer(), surface);
             

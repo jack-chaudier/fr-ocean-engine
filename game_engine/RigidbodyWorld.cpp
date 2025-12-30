@@ -12,7 +12,7 @@
 
 void RigidbodyWorld::Init() {
     if (!world) {
-        world = new b2World(gravity);
+        world = std::make_unique<b2World>(gravity);
 
         static CollisionListener listener;
         world->SetContactListener(&listener);
@@ -21,7 +21,7 @@ void RigidbodyWorld::Init() {
 
 void RigidbodyWorld::UpdateWorld() {
     if (world)
-        world->Step(1.0f / 60.0f, 8, 3);
+        world->Step(physics_timestep, velocity_iterations, position_iterations);
 }
 
 b2Body* RigidbodyWorld::AddRigidbody(const b2BodyDef& bodyDef) {
@@ -32,8 +32,5 @@ b2Body* RigidbodyWorld::AddRigidbody(const b2BodyDef& bodyDef) {
 }
 
 void RigidbodyWorld::Shutdown() {
-    if (world) {
-        delete world;
-        world = nullptr;
-    }
+    world.reset();
 }

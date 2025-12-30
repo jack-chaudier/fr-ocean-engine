@@ -21,6 +21,11 @@
 #include "TextDB.hpp"
 #include "AudioDB.hpp"
 #include "ImageDB.hpp"
+#include "Time.hpp"
+#include "EventSystem.hpp"
+#include "Scheduler.hpp"
+#include "Tween.hpp"
+#include "CollisionLayers.hpp"
 
 
 Engine::Engine() {
@@ -29,7 +34,12 @@ Engine::Engine() {
     Input::Init();
     AudioDB::Init();
     ComponentDB::Init();
-    
+    Time::Init();
+    EventSystem::Init();
+    Scheduler::Init();
+    Tween::Init();
+    CollisionLayers::Init();
+
     scene.loadScene();
 }
 
@@ -59,9 +69,22 @@ void Engine::GameLoop() {
 }
 
 void Engine::Update() {
+    // Update time at the start of each frame
+    Time::Update();
+
+    // Handle scene loading and clear per-scene systems
     if (!SceneDB::next_scene_to_load.empty()) {
+        EventSystem::Clear();
+        Scheduler::Clear();
+        Tween::Clear();
         scene.loadScene();
     }
+
+    // Update timer and tween systems
+    float dt = Time::GetDeltaTime();
+    Scheduler::Update(dt);
+    Tween::Update(dt);
+
     scene.UpdateScene();
 }
 

@@ -38,12 +38,12 @@ void Rigidbody::Init(Actor * owner) {
 
     if (has_collider) {
         b2FixtureDef colDef;
+        b2PolygonShape boxShape;
+        b2CircleShape circleShape;
         if (collider_type == "box") {
-            static b2PolygonShape boxShape;
             boxShape.SetAsBox(width * 0.5f, height * 0.5f);
             colDef.shape = &boxShape;
         } else {
-            static b2CircleShape circleShape;
             circleShape.m_radius = radius;
             colDef.shape = &circleShape;
         }
@@ -64,15 +64,15 @@ void Rigidbody::Init(Actor * owner) {
         trigDef.isSensor = true;
         trigDef.density  = density;
 
+        b2PolygonShape triggerBoxShape;
+        b2CircleShape triggerCircleShape;
         if (trigger_type == "box") {
-            static b2PolygonShape boxShape;
-            boxShape.SetAsBox(trigger_width * 0.5f,
+            triggerBoxShape.SetAsBox(trigger_width * 0.5f,
                               trigger_height * 0.5f);
-            trigDef.shape = &boxShape;
+            trigDef.shape = &triggerBoxShape;
         } else {
-            static b2CircleShape circleShape;
-            circleShape.m_radius = trigger_radius;
-            trigDef.shape = &circleShape;
+            triggerCircleShape.m_radius = trigger_radius;
+            trigDef.shape = &triggerCircleShape;
         }
 
         trigDef.filter.categoryBits = 0x0002;
