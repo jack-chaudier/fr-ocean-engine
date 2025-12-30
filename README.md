@@ -67,7 +67,8 @@ Built with modern C++17 and industry-standard libraries, FR-Ocean Engine combine
 - Modern CMake build system
 - Vendored dependencies (no external package managers required)
 - Built-in logging system with multiple severity levels
-- Debug pixel drawing for visualization
+- Debug pixel and rectangle drawing for visualization
+- Runtime resources path override via command-line
 
 ## Requirements
 
@@ -189,13 +190,37 @@ fr-ocean-engine/
 - **[Contributing Guide](./CONTRIBUTING.md)**: How to contribute to the project
 - **[Changelog](./CHANGELOG.md)**: Version history and release notes
 
-## Examples
+## Example Games
 
-Check out the Space Shooter example in `resources.example/` which demonstrates:
+The engine includes three example games to demonstrate different capabilities:
+
+### Space Shooter (`resources.example/`)
 - Player movement and shooting
 - Enemy spawning and AI
 - Collision detection with triggers
 - Score tracking and game over state
+
+### Platformer (`resources.platformer/`)
+- Physics-based player movement with jumping
+- Ground detection via raycasting
+- Collectible coins with trigger volumes
+- Smooth camera following
+- Multi-platform level design
+
+```bash
+./build/bin/game_engine --resources resources.platformer/
+```
+
+### Puzzle Match (`resources.puzzle/`)
+- Match-3 puzzle gameplay
+- Grid-based piece matching
+- Score tracking with progress bar
+- Move counter and win/lose conditions
+- Mouse-based selection and swapping
+
+```bash
+./build/bin/game_engine --resources resources.puzzle/
+```
 
 ## Troubleshooting
 

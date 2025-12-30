@@ -47,8 +47,11 @@ luabridge::LuaRef Actor::GetComponents(const std::string & type) {
         if (it == components.end()) continue;
         
         const auto& compRef = *(it->second);
-        if (type == "Rigidbody" && compRef.isUserdata())
-            ret[idx++] = compRef;
+        if (compRef.isUserdata()) {
+            if (type == "Rigidbody")
+                ret[idx++] = compRef;
+            continue;
+        }
         if (compRef["type"] == type && compRef["enabled"])
             ret[idx++] = compRef;
     }

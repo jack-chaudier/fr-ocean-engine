@@ -16,6 +16,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Profiling tools
 - Documentation website
 
+## [1.0.1] - 2025-12-29
+
+### Added
+- `Image.DrawRect()` function for filled rectangle rendering
+- `Rigidbody.RecreateFixtures()` for runtime fixture updates
+- Two new example games: Platformer and Puzzle Match
+
+### Fixed
+- **Resources path override**: `--resources` flag now properly propagates to all subsystems
+- **Scene component overrides**: Position overrides now correctly update Box2D body positions
+- **Fixture dimension overrides**: Width/height overrides now recreate Box2D fixtures
+- **Trigger collision detection**: Changed filter to allow trigger-collider interactions (mask=0xFFFF)
+- **Collision callbacks**: Now properly skip C++ userdata components (Rigidbody)
+- **Actor destruction**: Deferred to after physics step to prevent Box2D crashes
+- **Component enabled checks**: Fixed crash when accessing `enabled` on Rigidbody userdata
+
+### Changed
+- Collision filter masks updated to 0xFFFF for universal detection
+- Actor destruction now defers component cleanup to `ActorsPendingDestruction()`
+
 ## [1.0.0] - 2025-10-28
 
 ### Initial Release

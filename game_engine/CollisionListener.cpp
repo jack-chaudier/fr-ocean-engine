@@ -51,7 +51,9 @@ void CollisionListener::dispatch(b2Contact* c, bool isEnter)
 void CollisionListener::callLua(Actor* self, Actor* other,
                                 const b2Vec2& pt, const b2Vec2& rv,
                                 const b2Vec2& n, bool isEnter, bool isTrigger) {
-    
+    // Skip if either actor has been destroyed
+    if (self->destroyed || other->destroyed) return;
+
     auto L = ComponentDB::GetLuaState();
     
     const char* fn;
@@ -64,6 +66,10 @@ void CollisionListener::callLua(Actor* self, Actor* other,
         auto it = self->components.find(key);
         if (it == self->components.end()) continue;
         luabridge::LuaRef comp = *it->second;
+
+        // Skip C++ userdata components (like Rigidbody) - they don't have Lua callbacks
+        if (comp.isUserdata()) continue;
+
         if (!comp[fn].isFunction()) continue;
 
         luabridge::LuaRef col = luabridge::newTable(L);

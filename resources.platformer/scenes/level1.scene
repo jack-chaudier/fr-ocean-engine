@@ -1,12 +1,72 @@
 {
     "actors": [
         {
+            "name": "Ground",
+            "template": "platform_static",
+            "components": {
+                "Rigidbody": {
+                    "x": 0,
+                    "y": 3,
+                    "width": 15,
+                    "height": 0.5
+                },
+                "Platform": {
+                    "platform_width": 15
+                }
+            }
+        },
+        {
+            "name": "Platform1",
+            "template": "platform_static",
+            "components": {
+                "Rigidbody": {
+                    "x": 5,
+                    "y": 1.5,
+                    "width": 3,
+                    "height": 0.5
+                },
+                "Platform": {
+                    "platform_width": 3
+                }
+            }
+        },
+        {
+            "name": "Platform2",
+            "template": "platform_static",
+            "components": {
+                "Rigidbody": {
+                    "x": -4,
+                    "y": 0.5,
+                    "width": 3,
+                    "height": 0.5
+                },
+                "Platform": {
+                    "platform_width": 3
+                }
+            }
+        },
+        {
+            "name": "Platform3",
+            "template": "platform_static",
+            "components": {
+                "Rigidbody": {
+                    "x": 8,
+                    "y": 0,
+                    "width": 2,
+                    "height": 0.5
+                },
+                "Platform": {
+                    "platform_width": 2
+                }
+            }
+        },
+        {
             "name": "Player",
             "template": "player",
             "components": {
                 "Rigidbody": {
-                    "x": -3,
-                    "y": 2
+                    "x": 0,
+                    "y": 1
                 }
             }
         },
@@ -25,112 +85,32 @@
             }
         },
         {
-            "name": "Ground",
-            "template": "platform_static",
-            "components": {
-                "Rigidbody": {
-                    "x": 0,
-                    "y": 5,
-                    "width": 30,
-                    "height": 1
-                },
-                "Platform": {
-                    "platform_width": 30
-                }
-            }
-        },
-        {
-            "name": "Platform",
-            "template": "platform_static",
-            "components": {
-                "Rigidbody": {
-                    "x": 4,
-                    "y": 3,
-                    "width": 3,
-                    "height": 0.5
-                },
-                "Platform": {
-                    "platform_width": 3
-                }
-            }
-        },
-        {
-            "name": "Platform",
-            "template": "platform_static",
-            "components": {
-                "Rigidbody": {
-                    "x": -4,
-                    "y": 2.5,
-                    "width": 2,
-                    "height": 0.5
-                },
-                "Platform": {
-                    "platform_width": 2
-                }
-            }
-        },
-        {
-            "name": "Platform",
-            "template": "platform_static",
-            "components": {
-                "Rigidbody": {
-                    "x": 8,
-                    "y": 1.5,
-                    "width": 2,
-                    "height": 0.5
-                },
-                "Platform": {
-                    "platform_width": 2
-                }
-            }
-        },
-        {
-            "name": "MovingPlatform",
-            "template": "platform_moving",
-            "components": {
-                "Rigidbody": {
-                    "x": 0,
-                    "y": 1
-                }
-            }
-        },
-        {
-            "name": "Enemy",
-            "template": "enemy",
+            "name": "Coin1",
+            "template": "coin",
             "components": {
                 "Rigidbody": {
                     "x": 5,
-                    "y": 4.5
+                    "y": 0.5
                 }
             }
         },
         {
-            "name": "Coin",
-            "template": "coin",
-            "components": {
-                "Rigidbody": {
-                    "x": 4,
-                    "y": 2
-                }
-            }
-        },
-        {
-            "name": "Coin",
+            "name": "Coin2",
             "template": "coin",
             "components": {
                 "Rigidbody": {
                     "x": -4,
-                    "y": 1.5
+                    "y": -0.5
                 }
             }
         },
         {
-            "name": "Coin",
+            "name": "Coin3",
             "template": "coin",
             "components": {
                 "Rigidbody": {
                     "x": 8,
-                    "y": 0.5
+                    "y": -1
                 }
             }
         }

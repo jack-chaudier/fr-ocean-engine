@@ -54,7 +54,7 @@ void Rigidbody::Init(Actor * owner) {
         colDef.isSensor   = false;
 
         colDef.filter.categoryBits = 0x0001;
-        colDef.filter.maskBits     = 0x0001;
+        colDef.filter.maskBits     = 0xFFFF;  // Collide with everything, be detected by triggers
 
         body->CreateFixture(&colDef);
     }
@@ -76,7 +76,7 @@ void Rigidbody::Init(Actor * owner) {
         }
 
         trigDef.filter.categoryBits = 0x0002;
-        trigDef.filter.maskBits     = 0x0002;
+        trigDef.filter.maskBits     = 0xFFFF;  // Detect everything including colliders
 
         body->CreateFixture(&trigDef);
     }
@@ -105,6 +105,81 @@ void Rigidbody::OnDestroy() {
     if (body) {
         RigidbodyWorld::GetWorld()->DestroyBody(body);
         body = nullptr;
+    }
+}
+
+void Rigidbody::RecreateFixtures(Actor* owner) {
+    if (!body) return;
+
+    // Destroy all existing fixtures
+    while (body->GetFixtureList()) {
+        body->DestroyFixture(body->GetFixtureList());
+    }
+
+    // Recreate collider fixture
+    if (has_collider) {
+        b2FixtureDef colDef;
+        b2PolygonShape boxShape;
+        b2CircleShape circleShape;
+        if (collider_type == "box") {
+            boxShape.SetAsBox(width * 0.5f, height * 0.5f);
+            colDef.shape = &boxShape;
+        } else {
+            circleShape.m_radius = radius;
+            colDef.shape = &circleShape;
+        }
+
+        colDef.density    = density;
+        colDef.friction   = friction;
+        colDef.restitution= bounciness;
+        colDef.isSensor   = false;
+
+        colDef.filter.categoryBits = 0x0001;
+        colDef.filter.maskBits     = 0xFFFF;  // Collide with everything, be detected by triggers
+
+        body->CreateFixture(&colDef);
+    }
+
+    // Recreate trigger fixture
+    if (has_trigger) {
+        b2FixtureDef trigDef;
+        trigDef.isSensor = true;
+        trigDef.density  = density;
+
+        b2PolygonShape triggerBoxShape;
+        b2CircleShape triggerCircleShape;
+        if (trigger_type == "box") {
+            triggerBoxShape.SetAsBox(trigger_width * 0.5f, trigger_height * 0.5f);
+            trigDef.shape = &triggerBoxShape;
+        } else {
+            triggerCircleShape.m_radius = trigger_radius;
+            trigDef.shape = &triggerCircleShape;
+        }
+
+        trigDef.filter.categoryBits = 0x0002;
+        trigDef.filter.maskBits     = 0xFFFF;  // Detect everything including colliders
+
+        body->CreateFixture(&trigDef);
+    }
+
+    // Recreate phantom fixture if no collider or trigger
+    if (!has_collider && !has_trigger) {
+        b2PolygonShape phantomShape;
+        phantomShape.SetAsBox(width * 0.5f, height * 0.5f);
+
+        b2FixtureDef phantomDef;
+        phantomDef.shape     = &phantomShape;
+        phantomDef.isSensor  = true;
+        phantomDef.density = density;
+        phantomDef.filter.categoryBits = 0x0002;
+        phantomDef.filter.maskBits     = 0x0000;
+
+        body->CreateFixture(&phantomDef);
+    }
+
+    // Update fixture user data
+    for (b2Fixture* f = body->GetFixtureList(); f; f = f->GetNext()) {
+        f->GetUserData().pointer = reinterpret_cast<uintptr_t>(owner);
     }
 }
 

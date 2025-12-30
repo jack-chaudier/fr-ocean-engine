@@ -158,8 +158,22 @@ void ImageDB::QueueDrawPixel(float x, float y, float r, float g, float b, float 
     request.g = static_cast<int>(g);
     request.b = static_cast<int>(b);
     request.a = static_cast<int>(a);
-    
+
     pixel_draw_request_queue.push_back(request);
+}
+
+void ImageDB::QueueDrawRect(float x, float y, float w, float h, float r, float g, float b, float a) {
+    RectDrawRequest request;
+    request.x = static_cast<int>(x);
+    request.y = static_cast<int>(y);
+    request.w = static_cast<int>(w);
+    request.h = static_cast<int>(h);
+    request.r = static_cast<int>(r);
+    request.g = static_cast<int>(g);
+    request.b = static_cast<int>(b);
+    request.a = static_cast<int>(a);
+
+    rect_draw_request_queue.push_back(request);
 }
 
 void ImageDB::RenderAndClearAllImages() {
@@ -229,16 +243,25 @@ void ImageDB::RenderAndClearAllImages() {
 
 void ImageDB::RenderAndClearAllPixels() {
     SDL_Renderer* renderer = Renderer::getSDLRenderer();
-    
+
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    
+
+    // Draw filled rectangles first (behind pixels)
+    for (const auto& request : rect_draw_request_queue) {
+        SDL_SetRenderDrawColor(renderer, request.r, request.g, request.b, request.a);
+        SDL_Rect rect = {request.x, request.y, request.w, request.h};
+        SDL_RenderFillRect(renderer, &rect);
+    }
+
+    // Draw pixels on top
     for (const auto& request : pixel_draw_request_queue) {
         SDL_SetRenderDrawColor(renderer, request.r, request.g, request.b, request.a);
         SDL_RenderDrawPoint(renderer, request.x, request.y);
     }
-    
+
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-    
+
+    rect_draw_request_queue.clear();
     pixel_draw_request_queue.clear();
 }
 
@@ -247,6 +270,7 @@ void ImageDB::RenderAndClearAllPixels() {
 void ImageDB::ClearQueues() {
     image_draw_request_queue.clear();
     pixel_draw_request_queue.clear();
+    rect_draw_request_queue.clear();
     request_counter = 0;
 }
 

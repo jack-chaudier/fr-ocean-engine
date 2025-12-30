@@ -39,7 +39,7 @@ end
 
 function UIManager:DrawLeftPanel()
     -- Panel background
-    Image.DrawPixel(10, 100, 170, 200, 40, 40, 60, 220)
+    Image.DrawRect(10, 100, 170, 200, 40, 40, 60, 220)
 
     -- Title
     Text.Draw("PUZZLE MATCH", 20, 20, "OpenSans-Regular", 24, 255, 200, 100, 255)
@@ -58,14 +58,14 @@ function UIManager:DrawLeftPanel()
     local bar_height = 12
 
     -- Bar background
-    Image.DrawPixel(25, 255, bar_width, bar_height, 60, 60, 80, 255)
+    Image.DrawRect(25, 255, bar_width, bar_height, 60, 60, 80, 255)
 
     -- Bar fill
     local fill_width = math.floor(bar_width * progress)
     if fill_width > 0 then
         local r = math.floor(255 * (1 - progress) + 100 * progress)
         local g = math.floor(100 * (1 - progress) + 255 * progress)
-        Image.DrawPixel(25, 255, fill_width, bar_height, r, g, 100, 255)
+        Image.DrawRect(25, 255, fill_width, bar_height, r, g, 100, 255)
     end
 
     -- Moves section

@@ -148,6 +148,7 @@ void ComponentDB::Init() {
             .addFunction("Draw", &ImageDB::QueueImageDraw)
             .addFunction("DrawEx", &ImageDB::QueueImageDrawEx)
             .addFunction("DrawPixel", &ImageDB::QueueDrawPixel)
+            .addFunction("DrawRect", &ImageDB::QueueDrawRect)
         .endNamespace()
         .beginNamespace("Camera")
             .addFunction("SetPosition", static_cast<void (*)(float, float)>(&Renderer::SetCameraPosition))
@@ -243,6 +244,8 @@ void ComponentDB::loadComponents(Actor * a, const rapidjson::Value &doc) {
                 comp_type = comp_data["type"].GetString();
             }
 
+            bool position_overridden = false;
+            bool dimensions_overridden = false;
             for (auto it_2 = comp_data.MemberBegin(); it_2 != comp_data.MemberEnd(); ++it_2) {
                 std::string prop = it_2->name.GetString();
                 if (prop == "type")
@@ -250,9 +253,29 @@ void ComponentDB::loadComponents(Actor * a, const rapidjson::Value &doc) {
 
                 if (comp_type == "Rigidbody") {
                     overrideRigidbodyfValue(existing_table, prop, it_2->value);
+                    if (prop == "x" || prop == "y") {
+                        position_overridden = true;
+                    }
+                    if (prop == "width" || prop == "height" || prop == "radius" ||
+                        prop == "trigger_width" || prop == "trigger_height" || prop == "trigger_radius") {
+                        dimensions_overridden = true;
+                    }
                 }
                 else
                     overrideLuaRefValue(existing_table, prop, it_2->value);
+            }
+
+            // If rigidbody was overridden, update the physics body
+            if (comp_type == "Rigidbody") {
+                Rigidbody* rb = existing_table.cast<Rigidbody*>();
+                if (rb) {
+                    if (dimensions_overridden) {
+                        rb->RecreateFixtures(a);
+                    }
+                    if (position_overridden) {
+                        rb->SetPosition(b2Vec2(rb->x, rb->y));
+                    }
+                }
             }
         }
         else {

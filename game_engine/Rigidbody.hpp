@@ -182,6 +182,15 @@ public:
      */
     void OnDestroy();
 
+    /**
+     * @brief Recreates all fixtures with current dimension properties.
+     *
+     * @param owner Pointer to the owning Actor (for fixture user data)
+     *
+     * @note Call this after changing width/height/radius if body already exists
+     */
+    void RecreateFixtures(Actor* owner);
+
     // Physics configuration properties (set before Init() or from Lua):
 
     float x = 0.0f;                             ///< Initial X position

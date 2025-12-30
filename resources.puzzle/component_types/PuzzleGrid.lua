@@ -108,14 +108,14 @@ function PuzzleGrid:DrawGrid()
             local py = oy + (y - 1) * cell
 
             -- Cell background
-            Image.DrawPixel(px, py, cell - 2, cell - 2, 40, 40, 60, 255)
+            Image.DrawRect(px, py, cell - 2, cell - 2, 40, 40, 60, 255)
 
             -- Piece
             local piece = self.grid[x][y]
             if piece and piece > 0 then
                 local color = piece_colors[piece] or {128, 128, 128}
                 local inner_margin = 4
-                Image.DrawPixel(
+                Image.DrawRect(
                     px + inner_margin,
                     py + inner_margin,
                     cell - 2 - inner_margin * 2,
@@ -124,7 +124,7 @@ function PuzzleGrid:DrawGrid()
                 )
 
                 -- Highlight for gems (inner shine)
-                Image.DrawPixel(
+                Image.DrawRect(
                     px + inner_margin + 8,
                     py + inner_margin + 8,
                     16, 16,
@@ -138,10 +138,10 @@ function PuzzleGrid:DrawGrid()
             -- Selection highlight
             if x == self.selected_x and y == self.selected_y then
                 -- Draw selection border
-                Image.DrawPixel(px - 2, py - 2, cell + 2, 4, 255, 255, 255, 255)
-                Image.DrawPixel(px - 2, py + cell - 4, cell + 2, 4, 255, 255, 255, 255)
-                Image.DrawPixel(px - 2, py - 2, 4, cell + 2, 255, 255, 255, 255)
-                Image.DrawPixel(px + cell - 4, py - 2, 4, cell + 2, 255, 255, 255, 255)
+                Image.DrawRect(px - 2, py - 2, cell + 2, 4, 255, 255, 255, 255)
+                Image.DrawRect(px - 2, py + cell - 4, cell + 2, 4, 255, 255, 255, 255)
+                Image.DrawRect(px - 2, py - 2, 4, cell + 2, 255, 255, 255, 255)
+                Image.DrawRect(px + cell - 4, py - 2, 4, cell + 2, 255, 255, 255, 255)
             end
         end
     end
@@ -353,7 +353,7 @@ end
 
 function PuzzleGrid:DrawGameOverOverlay()
     -- Semi-transparent overlay
-    Image.DrawPixel(0, 0, 800, 600, 0, 0, 0, 180)
+    Image.DrawRect(0, 0, 800, 600, 0, 0, 0, 180)
 
     if self.game_won then
         Text.Draw("YOU WIN!", 300, 200, "OpenSans-Regular", 48, 100, 255, 100, 255)

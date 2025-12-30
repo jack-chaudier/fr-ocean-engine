@@ -303,6 +303,11 @@ void SceneDB::ProcessSceneLateUpdate() {
         if (actor->destroyed) continue;
 
         luabridge::LuaRef comp = *(cache_it->second);
+
+        if (comp.isUserdata()) {
+            continue;
+        }
+
         if (!comp["enabled"]) continue;
 
         if (comp["frame_added"] == Helper::GetFrameNumber() && comp["new_addition"]) continue;
@@ -439,33 +444,10 @@ Actor* SceneDB::InstantiateActor(const std::string& temp) {
 void SceneDB::DestroyActor(Actor* actor) {
     actor->destroyed = true;
     actors_to_destroy.push_back(actor->GetID());
-    
-    std::vector<std::string> keys;
-    for (const auto& key : actor->component_keys) {
-        keys.push_back(key);
-    }
-    std::sort(keys.begin(), keys.end());
-    
-    for (const auto& key : keys) {
-        auto comp_it = actor->components.find(key);
-        if (comp_it != actor->components.end()) {
-            auto& comp = comp_it->second;
-            if ((*comp)["OnDestroy"].isFunction()) {
-                try {
-                    (*comp)["OnDestroy"](*comp);
-                }
-                catch (luabridge::LuaException& e) {
-                    ReportError(actor->GetName(), e);
-                }
-            } else if ((*comp).isUserdata() && (*comp).isInstance<Rigidbody>()) {
-                Rigidbody* rb = (*comp).cast<Rigidbody*>();
-                rb->OnDestroy();
-            }
-            
-            (*comp)["enabled"] = false;
-            removeComponentFromCaches(actor->GetID(), key);
-        }
-    }
+
+    // Only mark actor for destruction here - actual cleanup happens in ActorsPendingDestruction
+    // This is critical because DestroyActor can be called during physics step (collision callbacks)
+    // and destroying Box2D bodies during Step() causes crashes
 }
 
 void SceneDB::ActorsPendingDestruction() {
@@ -476,6 +458,43 @@ void SceneDB::ActorsPendingDestruction() {
         actors_to_destroy.begin(),
         actors_to_destroy.end()
     );
+
+    // Call OnDestroy on all components before erasing actors
+    for (uint64_t id : actors_to_destroy) {
+        auto actor_it = actors.find(id);
+        if (actor_it == actors.end()) continue;
+
+        auto& actor = actor_it->second;
+
+        std::vector<std::string> keys;
+        for (const auto& key : actor->component_keys) {
+            keys.push_back(key);
+        }
+        std::sort(keys.begin(), keys.end());
+
+        for (const auto& key : keys) {
+            auto comp_it = actor->components.find(key);
+            if (comp_it == actor->components.end()) continue;
+
+            auto& comp = comp_it->second;
+            if ((*comp).isUserdata() && (*comp).isInstance<Rigidbody>()) {
+                Rigidbody* rb = (*comp).cast<Rigidbody*>();
+                rb->OnDestroy();
+            } else if ((*comp)["OnDestroy"].isFunction()) {
+                try {
+                    (*comp)["OnDestroy"](*comp);
+                }
+                catch (luabridge::LuaException& e) {
+                    ReportError(actor->GetName(), e);
+                }
+            }
+
+            if (!(*comp).isUserdata()) {
+                (*comp)["enabled"] = false;
+            }
+            removeComponentFromCaches(actor->GetID(), key);
+        }
+    }
 
     // Erase from actors map
     for (uint64_t id : actors_to_destroy) {

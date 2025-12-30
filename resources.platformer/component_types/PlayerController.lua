@@ -3,7 +3,8 @@
 
 PlayerController = {
     move_speed = 5.0,
-    jump_force = 10.0,
+    jump_force = 8.0,
+    max_fall_speed = 12.0,
     rigidbody = nil,
     is_grounded = false,
     facing_right = true
@@ -20,11 +21,12 @@ function PlayerController:OnUpdate()
     local vel = self.rigidbody:GetVelocity()
     local pos = self.rigidbody:GetPosition()
 
-    -- Ground check via raycast
-    local ray_origin = Vector2(pos.x, pos.y + 0.35)
+    -- Ground check via raycast (start inside player, cast past feet)
+    -- Player half-height is 0.3, so start at 0.25 (inside) and cast 0.15 (ends at 0.4, past feet)
+    local ray_origin = Vector2(pos.x, pos.y + 0.25)
     local ray_dir = Vector2(0, 1)
-    local hit = Physics.Raycast(ray_origin, ray_dir, 0.2)
-    self.is_grounded = (hit ~= nil and hit.actor ~= nil)
+    local hit = Physics.Raycast(ray_origin, ray_dir, 0.15)
+    self.is_grounded = (hit ~= nil and hit.actor ~= nil and not hit.is_trigger)
 
     -- Horizontal movement
     local move_x = 0
@@ -36,11 +38,17 @@ function PlayerController:OnUpdate()
         self.facing_right = true
     end
 
-    self.rigidbody:SetVelocity(Vector2(move_x, vel.y))
+    -- Clamp fall speed
+    local clamped_vel_y = vel.y
+    if clamped_vel_y > self.max_fall_speed then
+        clamped_vel_y = self.max_fall_speed
+    end
 
-    -- Jumping
+    self.rigidbody:SetVelocity(Vector2(move_x, clamped_vel_y))
+
+    -- Jumping (set velocity directly for consistent jump height)
     if (Input.GetKeyDown("space") or Input.GetKeyDown("up") or Input.GetKeyDown("w")) and self.is_grounded then
-        self.rigidbody:AddForce(Vector2(0, -self.jump_force * 50))
+        self.rigidbody:SetVelocity(Vector2(move_x, -self.jump_force))
         self.is_grounded = false
     end
 

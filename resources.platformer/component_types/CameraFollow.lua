@@ -2,8 +2,8 @@
 -- Smooth camera following
 
 CameraFollow = {
-    follow_speed = 5.0,
-    offset_y = -1.0,
+    follow_speed = 15.0,
+    offset_y = -0.5,
     target = nil,
     current_x = 0,
     current_y = 0

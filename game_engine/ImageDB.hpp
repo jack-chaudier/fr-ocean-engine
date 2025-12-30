@@ -62,6 +62,17 @@ struct PixelDrawRequest {
 };
 
 /**
+ * @struct RectDrawRequest
+ * @brief Encapsulates parameters for a deferred filled rectangle draw.
+ */
+struct RectDrawRequest {
+    int x, y;                   ///< Screen-space position (top-left)
+    int w, h;                   ///< Width and height
+    int r, g, b, a;             ///< RGBA color (0-255)
+    size_t order_index;         ///< Submission order for stable sorting
+};
+
+/**
  * @class ImageDB
  * @brief Deferred rendering system for sprites with texture caching and sorting.
  *
@@ -181,6 +192,11 @@ public:
     static void QueueDrawPixel(float x, float y, float r, float g, float b, float a);
 
     /**
+     * @brief Queues a filled rectangle for drawing (UI space).
+     */
+    static void QueueDrawRect(float x, float y, float w, float h, float r, float g, float b, float a);
+
+    /**
      * @brief Renders all queued image draws, then clears the queue.
      *
      * Rendering process:
@@ -225,6 +241,7 @@ private:
 
     /// Deferred draw request queue for pixels
     inline static std::vector<PixelDrawRequest> pixel_draw_request_queue;
+    inline static std::vector<RectDrawRequest> rect_draw_request_queue;
 
     /// Submission order counter for stable sorting
     inline static size_t request_counter = 0;
