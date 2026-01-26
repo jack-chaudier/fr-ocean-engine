@@ -157,3 +157,6 @@ Desktop.ini
 xcuserdata/
 *.xcscmblueprint
 *.xccheckout
+# Secrets
+.env
+.env.*
