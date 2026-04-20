@@ -103,8 +103,8 @@ function PlayerController:OnUpdate()
     end
 
     -- Draw player (flip via negative scale_x)
-    local sx = self.facing_right and 0.5 or -0.5
-    Image.DrawEx("player", pos.x, pos.y, 0, sx, 0.5, 0.5, 0.5, 255, 255, 255, 255, 5)
+    local sx = self.facing_right and 0.8 or -0.8
+    Image.DrawEx("player", pos.x, pos.y, 0, sx, 0.8, 0.5, 0.5, 255, 255, 255, 255, 5)
 
     -- Fell off map
     if pos.y > 12 then self:Die() end

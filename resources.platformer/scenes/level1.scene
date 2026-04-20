@@ -1,7 +1,5 @@
 {
     "actors": [
-        { "name": "Background", "template": "background" },
-
         { "name": "Ground",     "template": "platform_static",
           "components": { "Rigidbody": { "x":  0, "y": 3, "width": 18, "height": 0.5 },
                           "Platform":  { "platform_width": 18 } } },

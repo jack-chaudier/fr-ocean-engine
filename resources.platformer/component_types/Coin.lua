@@ -24,10 +24,10 @@ function Coin:OnUpdate()
     self.spin       = self.spin + dt * 3.0
     local bob_y  = math.sin(self.bob_offset) * 0.12
     -- Fake rotation via horizontal squash (cos oscillates -1..1)
-    local scale  = math.abs(math.cos(self.spin)) * 0.3 + 0.05
+    local scale  = math.abs(math.cos(self.spin)) * 0.45 + 0.1
 
     Image.DrawEx("coin", pos.x, pos.y + bob_y, 0,
-        scale, 0.3, 0.5, 0.5, 255, 215, 40, 255, 2)
+        scale, 0.55, 0.5, 0.5, 255, 215, 40, 255, 2)
 end
 
 function Coin:Collect()

@@ -150,29 +150,22 @@ def particle():
     save(img, "particle.png")
 
 
-# --- Background: soft sky with distant hills -------------------------------
-def background():
-    w, h = 1280, 720
-    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    # gradient sky
-    for y in range(h):
-        t = y / h
-        r = int(135 * (1 - t) + 255 * t * 0.6)
-        g = int(206 * (1 - t) + 230 * t * 0.7)
-        b = int(235 * (1 - t) + 200 * t * 0.9)
-        ImageDraw.Draw(img).line([(0, y), (w, y)], fill=(r, g, b, 255))
-    # hills
+# --- Hud backdrop: translucent rounded bar --------------------------------
+def hud_bar():
+    img = Image.new("RGBA", (400, 64), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.ellipse([-200, h - 260, 600, h + 100], fill=(130, 190, 120, 255))
-    d.ellipse([500, h - 200, 1100, h + 100], fill=(110, 170, 110, 255))
-    d.ellipse([900, h - 300, 1500, h + 100], fill=(100, 160, 100, 255))
-    # clouds
-    for (cx, cy) in [(200, 140), (700, 90), (1100, 170)]:
-        for dx, dy, r in [(0, 0, 40), (40, -10, 30), (-40, 0, 30), (20, 10, 35)]:
-            d.ellipse([cx + dx - r, cy + dy - r, cx + dx + r, cy + dy + r],
-                      fill=(255, 255, 255, 220))
-    img = img.filter(ImageFilter.SMOOTH)
-    save(img, "background.png")
+    d.rounded_rectangle([0, 0, 399, 63], 10, fill=(14, 18, 28, 210))
+    save(img, "hud_bar.png")
+
+
+# --- Cloud decal (small, drawn in world-space, parallaxed via camera) -----
+def cloud():
+    img = Image.new("RGBA", (160, 80), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    for dx, dy, r in [(50, 45, 30), (85, 35, 28), (30, 50, 22), (110, 50, 22)]:
+        d.ellipse([dx - r, dy - r, dx + r, dy + r], fill=(255, 255, 255, 230))
+    img = img.filter(ImageFilter.SMOOTH_MORE)
+    save(img, "cloud.png")
 
 
 if __name__ == "__main__":
@@ -185,5 +178,6 @@ if __name__ == "__main__":
     spike()
     flag()
     particle()
-    background()
+    hud_bar()
+    cloud()
     print("Done.")

@@ -1,7 +1,5 @@
 {
     "actors": [
-        { "name": "Background", "template": "background" },
-
         { "name": "StartPad",   "template": "platform_static",
           "components": { "Rigidbody": { "x": -7, "y": 3, "width": 4, "height": 0.5 },
                           "Platform":  { "platform_width": 4 } } },

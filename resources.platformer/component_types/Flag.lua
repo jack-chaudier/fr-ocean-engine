@@ -18,7 +18,7 @@ function Flag:OnUpdate()
     local pos = self.rigidbody:GetPosition()
     self.bob = self.bob + dt * 4
     local wave = math.sin(self.bob) * 0.04
-    Image.DrawEx("flag", pos.x, pos.y + wave, 0, 0.6, 0.6, 0.5, 0.5, 255, 255, 255, 255, 1)
+    Image.DrawEx("flag", pos.x, pos.y + wave, 0, 0.9, 0.9, 0.5, 0.5, 255, 255, 255, 255, 1)
 end
 
 function Flag:Reach()

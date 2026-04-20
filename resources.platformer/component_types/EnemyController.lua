@@ -36,9 +36,9 @@ function EnemyController:OnUpdate()
     self.bob = self.bob + dt * 6
     local bob_y = math.sin(self.bob) * 0.04
 
-    local sx = self.direction >= 0 and 0.4 or -0.4
+    local sx = self.direction >= 0 and 0.7 or -0.7
     Image.DrawEx("enemy", pos.x, pos.y + bob_y, 0,
-        sx, 0.4, 0.5, 0.5, 255, 255, 255, 255, 3)
+        sx, 0.7, 0.5, 0.5, 255, 255, 255, 255, 3)
 end
 
 function EnemyController:Die()
