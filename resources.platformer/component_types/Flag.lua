@@ -1,4 +1,7 @@
--- Flag — level goal. Loading the next scene is debounced by `reached`.
+-- Flag — level goal. Debounced so it can't fire twice.
+
+local NATURAL_WU = 64 * 0.01
+local FLAG_W = 0.6
 
 Flag = {
     next_scene = "level2",
@@ -7,24 +10,27 @@ Flag = {
 }
 
 function Flag:OnStart()
-    self.rigidbody = self.actor:GetComponent("Rigidbody")
+    self.rb = self.actor:GetComponent("Rigidbody")
     self.reached = false
     self.bob = 0
 end
 
 function Flag:OnUpdate()
-    if not self.rigidbody then return end
+    if not self.rb then return end
     local dt  = Time.GetDeltaTime()
-    local pos = self.rigidbody:GetPosition()
+    local pos = self.rb:GetPosition()
     self.bob = self.bob + dt * 4
     local wave = math.sin(self.bob) * 0.04
-    Image.DrawEx("flag", pos.x, pos.y + wave, 0, 0.9, 0.9, 0.5, 0.5, 255, 255, 255, 255, 1)
+
+    local s = FLAG_W / NATURAL_WU
+    Image.DrawEx("flag", pos.x, pos.y + wave, 0,
+        s, s * 1.2, 0.5, 0.5, 255, 255, 255, 255, 1)
 end
 
 function Flag:Reach()
     if self.reached then return end
     self.reached = true
-    local pos = self.rigidbody:GetPosition()
+    local pos = self.rb:GetPosition()
 
     local c = ParticleConfig()
     c.lifetime_min = 0.4

@@ -1,19 +1,18 @@
--- Spike — pure visual hazard. Collision is handled by PlayerController.
+-- Spike — hazard. Sprite matches the trigger volume.
 
-Spike = {
-    length = 1,
-}
+local NATURAL_WU = 64 * 0.01
+
+Spike = {}
 
 function Spike:OnStart()
-    self.rigidbody = self.actor:GetComponent("Rigidbody")
-    if not self.rigidbody then return end
-    if self.rigidbody.trigger_width and self.rigidbody.trigger_width > 0 then
-        self.length = self.rigidbody.trigger_width
-    end
+    self.rb = self.actor:GetComponent("Rigidbody")
 end
 
 function Spike:OnUpdate()
-    if not self.rigidbody then return end
-    local pos = self.rigidbody:GetPosition()
-    Image.DrawEx("spike", pos.x, pos.y, 0, self.length, 0.5, 0.5, 0.5, 255, 255, 255, 255, 1)
+    if not self.rb then return end
+    local pos = self.rb:GetPosition()
+    local sx  = (self.rb.trigger_width  or 1.0) / NATURAL_WU
+    local sy  = (self.rb.trigger_height or 0.5) / NATURAL_WU
+    Image.DrawEx("spike", pos.x, pos.y, 0, sx, sy, 0.5, 0.5,
+        255, 255, 255, 255, 1)
 end

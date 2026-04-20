@@ -1,0 +1,5 @@
+{
+    "actors": [
+        { "name": "TitleScreen", "template": "title_screen" }
+    ]
+}

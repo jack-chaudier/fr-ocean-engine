@@ -1,0 +1,6 @@
+{
+    "name": "VictoryScreen",
+    "components": {
+        "VictoryScreen": { "type": "VictoryScreen" }
+    }
+}

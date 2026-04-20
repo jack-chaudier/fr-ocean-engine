@@ -1,0 +1,6 @@
+{
+    "name": "TitleScreen",
+    "components": {
+        "TitleScreen": { "type": "TitleScreen" }
+    }
+}

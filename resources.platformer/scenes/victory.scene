@@ -1,0 +1,5 @@
+{
+    "actors": [
+        { "name": "VictoryScreen", "template": "victory_screen" }
+    ]
+}
