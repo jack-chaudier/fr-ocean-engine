@@ -246,27 +246,30 @@ void ImageDB::RenderAndClearAllImages() {
     image_draw_request_queue.clear();
 }
 
-void ImageDB::RenderAndClearAllPixels() {
+void ImageDB::RenderAndClearAllRects() {
     SDL_Renderer* renderer = Renderer::getSDLRenderer();
-
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    // Draw filled rectangles first (behind pixels)
     for (const auto& request : rect_draw_request_queue) {
         SDL_SetRenderDrawColor(renderer, request.r, request.g, request.b, request.a);
         SDL_Rect rect = {request.x, request.y, request.w, request.h};
         SDL_RenderFillRect(renderer, &rect);
     }
 
-    // Draw pixels on top
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    rect_draw_request_queue.clear();
+}
+
+void ImageDB::RenderAndClearAllPixels() {
+    SDL_Renderer* renderer = Renderer::getSDLRenderer();
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
     for (const auto& request : pixel_draw_request_queue) {
         SDL_SetRenderDrawColor(renderer, request.r, request.g, request.b, request.a);
         SDL_RenderDrawPoint(renderer, request.x, request.y);
     }
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-
-    rect_draw_request_queue.clear();
     pixel_draw_request_queue.clear();
 }
 

@@ -161,7 +161,10 @@ void Engine::Render() {
         SDL_RenderSetScale(Renderer::getSDLRenderer(), 1.0f, 1.0f);
     }
 
+    // Rects draw before text so they work as HUD backdrops.
+    ImageDB::RenderAndClearAllRects();
     TextDB::RenderQueuedTexts();
+    // Pixels draw on top of everything for debug overlays.
     ImageDB::RenderAndClearAllPixels();
 
     DebugDraw::Render();

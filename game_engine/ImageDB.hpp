@@ -209,9 +209,17 @@ public:
     static void RenderAndClearAllImages();
 
     /**
-     * @brief Renders all queued pixel draws, then clears the queue.
+     * @brief Renders queued filled rectangles, then clears the queue.
      *
-     * @note Pixels are drawn last (on top of everything) and ignore camera
+     * @note UI-space. Intended for backdrops behind HUD text, so this is
+     *       called *before* TextDB::RenderQueuedTexts().
+     */
+    static void RenderAndClearAllRects();
+
+    /**
+     * @brief Renders queued pixel draws, then clears the queue.
+     *
+     * @note Pixels draw last, on top of everything, and ignore camera.
      */
     static void RenderAndClearAllPixels();
 

@@ -114,15 +114,32 @@ def platform_moving():
     save(img, "platform_moving.png")
 
 
-# --- Spike trap: dark triangles --------------------------------------------
+# --- Spike trap: metallic triangles with shading ---------------------------
 def spike():
     img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    # three upward-pointing spikes
-    for i, (x0, x1) in enumerate([(2, 22), (22, 42), (42, 62)]):
-        d.polygon([(x0, 60), (x1, 60), ((x0 + x1) // 2, 10)], fill=(90, 90, 100, 255))
-        d.polygon([(x0 + 2, 60), ((x0 + x1) // 2, 16), ((x0 + x1) // 2 - 2, 60)],
-                  fill=(140, 140, 150, 255))
+
+    # Dark base (embedded in the ground look)
+    d.rounded_rectangle([0, 52, 63, 63], 2, fill=(70, 65, 75, 255))
+    d.rectangle([0, 60, 63, 63], fill=(40, 38, 46, 255))
+
+    # Four upward-pointing spikes with side-shading
+    tip_y, base_y = 6, 54
+    for x0, x1 in [(0, 16), (16, 32), (32, 48), (48, 64)]:
+        cx = (x0 + x1) // 2
+        # Dark right side
+        d.polygon([(cx, tip_y), (x1 - 1, base_y), (cx, base_y)],
+                  fill=(110, 108, 120, 255))
+        # Light left side
+        d.polygon([(cx, tip_y), (cx, base_y), (x0 + 1, base_y)],
+                  fill=(180, 180, 195, 255))
+        # Bright ridge highlight
+        d.line([(cx, tip_y + 1), (cx, base_y - 2)], fill=(230, 230, 240, 255))
+
+    # Tiny rivet spots at the base for a mounted feel
+    for bx in range(6, 64, 16):
+        d.ellipse([bx - 2, 56, bx + 2, 60], fill=(160, 160, 170, 255))
+
     save(img, "spike.png")
 
 

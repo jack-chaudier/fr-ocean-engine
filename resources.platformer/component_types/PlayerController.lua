@@ -89,10 +89,20 @@ function PlayerController:OnUpdate()
         self.hit_flash = math.max(0, self.hit_flash - dt * 3.5)
     end
 
-    -- Grounded check
+    -- Grounded check. Also capture any carry velocity from a MovingPlatform
+    -- below, so the player rides moving platforms properly.
     local hit = Physics.Raycast(Vector2(pos.x, pos.y + 0.25), Vector2(0, 1), 0.18)
     local was_grounded = self.is_grounded
     self.is_grounded = (hit ~= nil and hit.actor ~= nil and not hit.is_trigger)
+
+    local carry_vx = 0
+    if self.is_grounded and hit.actor then
+        local mp = hit.actor:GetComponent("MovingPlatform")
+        if mp and mp.move_speed and mp.direction then
+            carry_vx = mp.move_speed * mp.direction
+        end
+    end
+
     if self.is_grounded then
         self.time_ungrounded = 0.0
         if not was_grounded then
@@ -112,7 +122,7 @@ function PlayerController:OnUpdate()
 
     local vy = vel.y
     if vy > self.max_fall_speed then vy = self.max_fall_speed end
-    self.rb:SetVelocity(Vector2(move_x, vy))
+    self.rb:SetVelocity(Vector2(move_x + carry_vx, vy))
 
     -- Jump buffering + coyote time
     if Input.GetKeyDown("space") or Input.GetKeyDown("up") or Input.GetKeyDown("w") then
@@ -123,7 +133,9 @@ function PlayerController:OnUpdate()
         and (self.jump_buffered_at >= 0 and (now - self.jump_buffered_at) <= self.jump_buffer)
 
     if can_jump then
-        self.rb:SetVelocity(Vector2(move_x, -self.jump_force))
+        -- Carry the platform's horizontal speed into the jump so you don't
+        -- just launch straight up while the platform slides out from under.
+        self.rb:SetVelocity(Vector2(move_x + carry_vx, -self.jump_force))
         self.is_grounded = false
         self.jump_buffered_at = -1.0
         self.time_ungrounded  = self.coyote_time + 1.0

@@ -1,28 +1,33 @@
 {
     "actors": [
         { "name": "Ground", "template": "platform_static",
-          "components": { "Rigidbody": { "x": 0,  "y": 3,   "width": 20, "height": 0.5 } } },
+          "components": { "Rigidbody": { "x": 0, "y": 3, "width": 22, "height": 0.5 } } },
 
-        { "name": "Step",   "template": "platform_static",
-          "components": { "Rigidbody": { "x": 5,  "y": 1.6, "width": 2.2, "height": 0.5 } } },
+        { "name": "Step1", "template": "platform_static",
+          "components": { "Rigidbody": { "x":  4, "y": 1.5, "width": 2.0, "height": 0.5 } } },
 
-        { "name": "Coin",   "template": "coin",
-          "components": { "Rigidbody": { "x": -3,  "y": 2.4 } } },
-        { "name": "Coin",   "template": "coin",
-          "components": { "Rigidbody": { "x":  2,  "y": 2.4 } } },
-        { "name": "Coin",   "template": "coin",
-          "components": { "Rigidbody": { "x":  5,  "y": 1.0 } } },
+        { "name": "Step2", "template": "platform_static",
+          "components": { "Rigidbody": { "x":  8, "y": 0.2, "width": 2.0, "height": 0.5 } } },
 
-        { "name": "Enemy",  "template": "enemy",
-          "components": { "Rigidbody": { "x": 0,   "y": 2.4 },
-                          "EnemyController": { "patrol_distance": 2.0, "patrol_speed": 1.5 } } },
+        { "name": "Coin",  "template": "coin",
+          "components": { "Rigidbody": { "x": -5, "y": 2.4 } } },
+        { "name": "Coin",  "template": "coin",
+          "components": { "Rigidbody": { "x": -1, "y": 2.4 } } },
+        { "name": "Coin",  "template": "coin",
+          "components": { "Rigidbody": { "x":  4, "y": 0.8 } } },
+        { "name": "Coin",  "template": "coin",
+          "components": { "Rigidbody": { "x":  8, "y": -0.5 } } },
 
-        { "name": "Flag",   "template": "flag",
-          "components": { "Rigidbody": { "x": 9,   "y": 2.2 },
+        { "name": "Enemy", "template": "enemy",
+          "components": { "Rigidbody": { "x":  1, "y": 2.4 },
+                          "EnemyController": { "patrol_distance": 2.0, "patrol_speed": 1.6 } } },
+
+        { "name": "Flag",  "template": "flag",
+          "components": { "Rigidbody": { "x": 10, "y": 2.2 },
                           "Flag":      { "next_scene": "level2" } } },
 
         { "name": "Player", "template": "player",
-          "components": { "Rigidbody": { "x": -8,  "y": 2 } } },
+          "components": { "Rigidbody": { "x": -9, "y": 2 } } },
 
         { "name": "CameraController", "template": "camera_controller" },
 
