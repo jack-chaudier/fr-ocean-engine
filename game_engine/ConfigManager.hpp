@@ -42,6 +42,10 @@ public:
     static void SetResourcesPath(const std::string& path);
     static std::string GetResourcesPath();
 
+    /// CLI override for the initial scene. Takes precedence over game.config
+    /// when non-empty. Intended for `--initial-scene` and screenshot tooling.
+    static void SetInitialSceneOverride(const std::string& scene);
+
 private:
     inline static std::string resourcesPath = "resources/";
     inline static glm::ivec3 color = {255, 255, 255};

@@ -37,6 +37,15 @@ function GameManager:Subscribe()
 end
 
 function GameManager:OnStart()
+    -- If a GameManager is already persistent (we came here via scene load
+    -- rather than first boot), this new one is a duplicate from the scene
+    -- JSON — destroy self and let the persistent one keep its state.
+    local existing = Actor.FindAll("GameManager")
+    if #existing > 1 then
+        Actor.Destroy(self.actor)
+        return
+    end
+
     self.score  = 0
     self.coins  = 0
     self.deaths = 0

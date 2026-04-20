@@ -35,7 +35,9 @@ Renderer::Renderer(const std::string& title, glm::ivec3& clearColor, const glm::
 }
 
 void Renderer::clear(glm::ivec3 color) {
-    SDL_SetRenderDrawColor(renderer, color.x, color.y, color.z, 0);
+    // Alpha 255 so pixel readback (screenshots, RenderReadPixels) sees an
+    // opaque background. Doesn't affect normal on-screen presentation.
+    SDL_SetRenderDrawColor(renderer, color.x, color.y, color.z, 255);
     SDL_RenderClear(renderer);
 }
 

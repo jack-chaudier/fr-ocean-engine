@@ -21,11 +21,13 @@ namespace {
         std::cout
             << "Usage: " << program_name << " [options]\n\n"
             << "Options:\n"
-            << "  --resources <path>  Override resources directory (default: resources/)\n"
-            << "  --debug             Enable debug logging\n"
-            << "  --self-check [N]    Run N frames (default 60) then exit 0. For CI / smoke test.\n"
-            << "  --version           Print version and exit\n"
-            << "  --help              Print this help message\n";
+            << "  --resources <path>   Override resources directory (default: resources/)\n"
+            << "  --scene <name>       Start in this scene instead of game.config's initial_scene\n"
+            << "  --debug              Enable debug logging\n"
+            << "  --self-check [N]     Run N frames (default 60) then exit 0. For CI / smoke test.\n"
+            << "  --screenshot <path>  Save the final frame as a PNG, then exit (implies --self-check).\n"
+            << "  --version            Print version and exit\n"
+            << "  --help               Print this help message\n";
     }
 
     void PrintVersion() { std::cout << ENGINE_NAME << " v" << ENGINE_VERSION << "\n"; }
@@ -43,6 +45,8 @@ namespace {
 
 int main(int argc, char* argv[]) {
     std::string resources_path = "resources/";
+    std::string screenshot_path;
+    std::string initial_scene_override;
     bool debug_mode = false;
     int max_frames = -1;  // -1 = no limit
 
@@ -56,6 +60,15 @@ int main(int argc, char* argv[]) {
             if (i + 1 < argc && argv[i + 1][0] != '-') {
                 try { max_frames = std::stoi(argv[++i]); } catch (...) {}
             }
+            continue;
+        }
+        if (arg == "--screenshot" && i + 1 < argc) {
+            screenshot_path = argv[++i];
+            if (max_frames < 0) max_frames = 60;  // --screenshot implies self-check
+            continue;
+        }
+        if (arg == "--scene" && i + 1 < argc) {
+            initial_scene_override = argv[++i];
             continue;
         }
         if (arg == "--resources" && i + 1 < argc) {
@@ -78,6 +91,7 @@ int main(int argc, char* argv[]) {
         ConfigManager::SetResourcesPath(resources_path);
         ConfigManager config(resources_path + "game.config", resources_path + "rendering.config");
         ConfigManager::Load();
+        ConfigManager::SetInitialSceneOverride(initial_scene_override);
 
         const std::string game_title = ConfigManager::GetGameTitle();
         const glm::ivec2 resolution = ConfigManager::GetResolution();
@@ -99,6 +113,7 @@ int main(int argc, char* argv[]) {
         {
             Renderer renderer(game_title, clear_color, resolution);
             Engine engine;
+            if (!screenshot_path.empty()) Engine::SetScreenshotPath(screenshot_path);
             Engine::GameLoop(max_frames);
         }
 

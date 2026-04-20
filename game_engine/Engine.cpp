@@ -30,6 +30,8 @@
 #include "ParticleSystem.hpp"
 #include "DebugDraw.hpp"
 #include "SceneTransition.hpp"
+#include "Logger.hpp"
+#include "SDL2_image/SDL_image.h"
 
 
 Engine::Engine() {
@@ -86,6 +88,12 @@ void Engine::GameLoop(int max_frames) {
         }
 
         Update();
+
+        // Capture the screenshot on the *last* frame if one's queued.
+        if (max_frames >= 0 && frames + 1 == max_frames) {
+            screenshot_capture_this_frame = true;
+        }
+
         Render();
 
         Input::LateUpdate();
@@ -170,5 +178,31 @@ void Engine::Render() {
     DebugDraw::Render();
     SceneTransition::Render();
 
+    if (screenshot_capture_this_frame && !screenshot_path_pending.empty()) {
+        SDL_Renderer* r = Renderer::getSDLRenderer();
+        glm::ivec2 dims = Renderer::GetCameraDimensions();
+        SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(
+            0, dims.x, dims.y, 32, SDL_PIXELFORMAT_RGBA32);
+        if (surface) {
+            if (SDL_RenderReadPixels(r, nullptr, SDL_PIXELFORMAT_RGBA32,
+                                     surface->pixels, surface->pitch) == 0) {
+                if (IMG_SavePNG(surface, screenshot_path_pending.c_str()) == 0) {
+                    LOG_INFO("Screenshot saved to " + screenshot_path_pending);
+                } else {
+                    LOG_ERROR(std::string("IMG_SavePNG failed: ") + IMG_GetError());
+                }
+            } else {
+                LOG_ERROR(std::string("SDL_RenderReadPixels failed: ") + SDL_GetError());
+            }
+            SDL_FreeSurface(surface);
+        }
+        screenshot_path_pending.clear();
+        screenshot_capture_this_frame = false;
+    }
+
     Renderer::present();
+}
+
+void Engine::SetScreenshotPath(const std::string& path) {
+    screenshot_path_pending = path;
 }

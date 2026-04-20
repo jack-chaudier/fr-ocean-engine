@@ -1,133 +1,199 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#0f172a"/>
-      <stop offset="100%" stop-color="#1e293b"/>
+      <stop offset="0%"  stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0e172a"/>
     </linearGradient>
-    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    <linearGradient id="cardCore" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d2a44"/>
+      <stop offset="100%" stop-color="#0a1f33"/>
+    </linearGradient>
+    <linearGradient id="cardLua" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a2e0b"/>
+      <stop offset="100%" stop-color="#28210a"/>
+    </linearGradient>
+    <linearGradient id="cardEntry" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0c3a30"/>
+      <stop offset="100%" stop-color="#083024"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
     </marker>
     <style>
-      .title      { fill:#f8fafc; font-size:26px; font-weight:600; }
-      .subtitle   { fill:#94a3b8; font-size:13px; }
-      .box        { fill:#1e293b; stroke:#334155; stroke-width:1.5; rx:8; ry:8; }
-      .box-core   { fill:#0b3a5c; stroke:#38bdf8; stroke-width:1.5; rx:8; ry:8; }
-      .box-lua    { fill:#3a2e0b; stroke:#facc15; stroke-width:1.5; rx:8; ry:8; }
-      .box-user   { fill:#0b3a2e; stroke:#34d399; stroke-width:1.5; rx:8; ry:8; }
-      .label      { fill:#f1f5f9; font-size:13px; font-weight:500; }
-      .sub        { fill:#cbd5e1; font-size:11px; }
-      .link       { stroke:#94a3b8; stroke-width:1.3; fill:none; }
+      .title       { fill:#f8fafc; font-size:28px; font-weight:600; letter-spacing:-0.5px; }
+      .subtitle    { fill:#94a3b8; font-size:14px; }
+      .band        { fill:#64748b; font-size:12px; font-weight:600;
+                     letter-spacing:3px; text-transform:uppercase; }
+      .card-entry  { fill:url(#cardEntry); stroke:#34d399; stroke-width:1.2; }
+      .card-core   { fill:url(#cardCore); stroke:#38bdf8; stroke-width:1.2; }
+      .card-lua    { fill:url(#cardLua);  stroke:#facc15; stroke-width:1.2; }
+      .card-label  { fill:#f1f5f9; font-size:14px; font-weight:600; }
+      .card-sub    { fill:#94a3b8; font-size:11px; }
+      .link        { stroke:#475569; stroke-width:1.3; fill:none; stroke-dasharray:4 4; }
+      .link-solid  { stroke:#64748b; stroke-width:1.3; fill:none; }
+      .api-text    { fill:#fcd34d; font-size:12px; font-weight:500; }
+      .api-hdr     { fill:#fde68a; font-size:13px; font-weight:700; letter-spacing:1px; }
     </style>
   </defs>
 
-  <rect width="960" height="540" fill="url(#bg)"/>
+  <rect width="1000" height="560" fill="url(#bg)"/>
 
-  <text x="40"  y="48" class="title">FR-Ocean Engine</text>
-  <text x="40"  y="70" class="subtitle">C++17 core · SDL2 rendering · Box2D physics · Lua scripting</text>
+  <text x="40" y="46" class="title">FR-Ocean Engine</text>
+  <text x="40" y="68" class="subtitle">C++17 core · SDL2 rendering · Box2D physics · Lua 5.4 scripting</text>
 
-  <!-- Row 1 -->
-  <g>
-    <rect x="40"  y="110" width="160" height="60" class="box-user"/>
-    <text x="120" y="138" text-anchor="middle" class="label">main.cpp</text>
-    <text x="120" y="156" text-anchor="middle" class="sub">CLI &amp; SDL init</text>
-  </g>
-  <g>
-    <rect x="220" y="110" width="160" height="60" class="box-user"/>
-    <text x="300" y="138" text-anchor="middle" class="label">Engine</text>
-    <text x="300" y="156" text-anchor="middle" class="sub">game loop</text>
-  </g>
-  <g>
-    <rect x="400" y="110" width="160" height="60" class="box-user"/>
-    <text x="480" y="138" text-anchor="middle" class="label">ConfigManager</text>
-    <text x="480" y="156" text-anchor="middle" class="sub">game / render JSON</text>
-  </g>
-  <g>
-    <rect x="580" y="110" width="160" height="60" class="box-user"/>
-    <text x="660" y="138" text-anchor="middle" class="label">Logger</text>
-    <text x="660" y="156" text-anchor="middle" class="sub">leveled, timestamped</text>
-  </g>
-  <g>
-    <rect x="760" y="110" width="160" height="60" class="box-user"/>
-    <text x="840" y="138" text-anchor="middle" class="label">SceneTransition</text>
-    <text x="840" y="156" text-anchor="middle" class="sub">fade in / out</text>
+  <!-- Legend -->
+  <g transform="translate(680, 40)">
+    <rect x="0"   y="0" width="12" height="12" fill="url(#cardEntry)" stroke="#34d399"/>
+    <text x="18"  y="10" class="card-sub">entry / lifecycle</text>
+    <rect x="110" y="0" width="12" height="12" fill="url(#cardCore)" stroke="#38bdf8"/>
+    <text x="128" y="10" class="card-sub">runtime subsystem</text>
+    <rect x="240" y="0" width="12" height="12" fill="url(#cardLua)" stroke="#facc15"/>
+    <text x="258" y="10" class="card-sub">Lua bindings</text>
   </g>
 
-  <!-- Row 2: Subsystems -->
+  <!-- Band label: Entry -->
+  <text x="40" y="108" class="band">Entry</text>
+  <line x1="100" y1="103" x2="960" y2="103" stroke="#1f2937" stroke-width="1"/>
+
+  <!-- Entry row -->
   <g>
-    <rect x="40"  y="210" width="140" height="60" class="box-core"/>
-    <text x="110" y="238" text-anchor="middle" class="label">SceneDB</text>
-    <text x="110" y="256" text-anchor="middle" class="sub">actors · caches</text>
+    <rect x="40"  y="120" width="180" height="58" rx="8" class="card-entry"/>
+    <text x="130" y="146" text-anchor="middle" class="card-label">main.cpp</text>
+    <text x="130" y="164" text-anchor="middle" class="card-sub">CLI · SDL init · RAII</text>
   </g>
   <g>
-    <rect x="200" y="210" width="140" height="60" class="box-core"/>
-    <text x="270" y="238" text-anchor="middle" class="label">ComponentDB</text>
-    <text x="270" y="256" text-anchor="middle" class="sub">Lua bindings</text>
+    <rect x="240" y="120" width="180" height="58" rx="8" class="card-entry"/>
+    <text x="330" y="146" text-anchor="middle" class="card-label">Engine</text>
+    <text x="330" y="164" text-anchor="middle" class="card-sub">game loop · teardown</text>
   </g>
   <g>
-    <rect x="360" y="210" width="140" height="60" class="box-core"/>
-    <text x="430" y="238" text-anchor="middle" class="label">Renderer</text>
-    <text x="430" y="256" text-anchor="middle" class="sub">SDL2 · camera</text>
+    <rect x="440" y="120" width="170" height="58" rx="8" class="card-entry"/>
+    <text x="525" y="146" text-anchor="middle" class="card-label">ConfigManager</text>
+    <text x="525" y="164" text-anchor="middle" class="card-sub">game &amp; render JSON</text>
   </g>
   <g>
-    <rect x="520" y="210" width="140" height="60" class="box-core"/>
-    <text x="590" y="238" text-anchor="middle" class="label">RigidbodyWorld</text>
-    <text x="590" y="256" text-anchor="middle" class="sub">Box2D</text>
+    <rect x="630" y="120" width="150" height="58" rx="8" class="card-entry"/>
+    <text x="705" y="146" text-anchor="middle" class="card-label">Logger</text>
+    <text x="705" y="164" text-anchor="middle" class="card-sub">leveled output</text>
   </g>
   <g>
-    <rect x="680" y="210" width="140" height="60" class="box-core"/>
-    <text x="750" y="238" text-anchor="middle" class="label">Input</text>
-    <text x="750" y="256" text-anchor="middle" class="sub">keys · mouse</text>
+    <rect x="800" y="120" width="160" height="58" rx="8" class="card-entry"/>
+    <text x="880" y="146" text-anchor="middle" class="card-label">SceneTransition</text>
+    <text x="880" y="164" text-anchor="middle" class="card-sub">fade in / out</text>
   </g>
 
-  <!-- Row 3: Subsystems 2 -->
+  <!-- main → Engine -->
+  <path d="M220,149 L240,149" class="link-solid" marker-end="url(#arrow)"/>
+
+  <!-- Band label: Subsystems -->
+  <text x="40" y="218" class="band">Subsystems</text>
+  <line x1="130" y1="213" x2="960" y2="213" stroke="#1f2937" stroke-width="1"/>
+
+  <!-- Subsystems row 1 (simulation / scene) -->
   <g>
-    <rect x="40"  y="290" width="140" height="60" class="box-core"/>
-    <text x="110" y="318" text-anchor="middle" class="label">ImageDB</text>
-    <text x="110" y="336" text-anchor="middle" class="sub">deferred draw</text>
+    <rect x="40"  y="230" width="175" height="54" rx="8" class="card-core"/>
+    <text x="127" y="254" text-anchor="middle" class="card-label">SceneDB</text>
+    <text x="127" y="270" text-anchor="middle" class="card-sub">actors · caches</text>
   </g>
   <g>
-    <rect x="200" y="290" width="140" height="60" class="box-core"/>
-    <text x="270" y="318" text-anchor="middle" class="label">TextDB</text>
-    <text x="270" y="336" text-anchor="middle" class="sub">SDL2_ttf</text>
+    <rect x="235" y="230" width="175" height="54" rx="8" class="card-core"/>
+    <text x="322" y="254" text-anchor="middle" class="card-label">ComponentDB</text>
+    <text x="322" y="270" text-anchor="middle" class="card-sub">Lua bindings</text>
   </g>
   <g>
-    <rect x="360" y="290" width="140" height="60" class="box-core"/>
-    <text x="430" y="318" text-anchor="middle" class="label">AudioDB</text>
-    <text x="430" y="336" text-anchor="middle" class="sub">SDL2_mixer</text>
+    <rect x="430" y="230" width="175" height="54" rx="8" class="card-core"/>
+    <text x="517" y="254" text-anchor="middle" class="card-label">RigidbodyWorld</text>
+    <text x="517" y="270" text-anchor="middle" class="card-sub">Box2D</text>
   </g>
   <g>
-    <rect x="520" y="290" width="140" height="60" class="box-core"/>
-    <text x="590" y="318" text-anchor="middle" class="label">ParticleSystem</text>
-    <text x="590" y="336" text-anchor="middle" class="sub">pooled emitters</text>
+    <rect x="625" y="230" width="155" height="54" rx="8" class="card-core"/>
+    <text x="702" y="254" text-anchor="middle" class="card-label">Input</text>
+    <text x="702" y="270" text-anchor="middle" class="card-sub">keys · mouse</text>
   </g>
   <g>
-    <rect x="680" y="290" width="140" height="60" class="box-core"/>
-    <text x="750" y="318" text-anchor="middle" class="label">Tween · Timer</text>
-    <text x="750" y="336" text-anchor="middle" class="sub">Scheduler</text>
+    <rect x="800" y="230" width="160" height="54" rx="8" class="card-core"/>
+    <text x="880" y="254" text-anchor="middle" class="card-label">Time</text>
+    <text x="880" y="270" text-anchor="middle" class="card-sub">dt · scale · frames</text>
   </g>
 
-  <!-- Row 4: Lua land -->
+  <!-- Subsystems row 2 (rendering / audio / schedulers) -->
   <g>
-    <rect x="40"  y="400" width="860" height="90" class="box-lua"/>
-    <text x="470" y="430" text-anchor="middle" class="label">Lua components (resources.*/component_types/*.lua)</text>
-    <text x="470" y="452" text-anchor="middle" class="sub">OnStart · OnUpdate · OnLateUpdate · OnCollisionEnter · OnTriggerEnter · OnDestroy</text>
-    <text x="470" y="472" text-anchor="middle" class="sub">Actor · Input · Image · Text · Audio · Camera · Scene · Physics · Event · Timer · Tween · Particles · Animation · CollisionLayers</text>
+    <rect x="40"  y="300" width="140" height="54" rx="8" class="card-core"/>
+    <text x="110" y="324" text-anchor="middle" class="card-label">Renderer</text>
+    <text x="110" y="340" text-anchor="middle" class="card-sub">camera · SDL2</text>
+  </g>
+  <g>
+    <rect x="200" y="300" width="140" height="54" rx="8" class="card-core"/>
+    <text x="270" y="324" text-anchor="middle" class="card-label">ImageDB</text>
+    <text x="270" y="340" text-anchor="middle" class="card-sub">deferred queue</text>
+  </g>
+  <g>
+    <rect x="360" y="300" width="130" height="54" rx="8" class="card-core"/>
+    <text x="425" y="324" text-anchor="middle" class="card-label">TextDB</text>
+    <text x="425" y="340" text-anchor="middle" class="card-sub">SDL2_ttf</text>
+  </g>
+  <g>
+    <rect x="510" y="300" width="130" height="54" rx="8" class="card-core"/>
+    <text x="575" y="324" text-anchor="middle" class="card-label">AudioDB</text>
+    <text x="575" y="340" text-anchor="middle" class="card-sub">SDL2_mixer</text>
+  </g>
+  <g>
+    <rect x="660" y="300" width="140" height="54" rx="8" class="card-core"/>
+    <text x="730" y="324" text-anchor="middle" class="card-label">Particles</text>
+    <text x="730" y="340" text-anchor="middle" class="card-sub">pooled emitters</text>
+  </g>
+  <g>
+    <rect x="820" y="300" width="140" height="54" rx="8" class="card-core"/>
+    <text x="890" y="324" text-anchor="middle" class="card-label">Tween · Timer</text>
+    <text x="890" y="340" text-anchor="middle" class="card-sub">Scheduler</text>
   </g>
 
-  <!-- Flow arrows: main -> Engine -> SceneDB row -->
-  <path d="M200,140 L220,140" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L110,210" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L270,210" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L430,210" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L590,210" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L750,210" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L110,290" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L270,290" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L430,290" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L590,290" class="link" marker-end="url(#arrow)"/>
-  <path d="M300,170 L750,290" class="link" marker-end="url(#arrow)"/>
+  <!-- Engine → subsystems (single multi-exit "rake") -->
+  <line x1="330" y1="178" x2="330" y2="200" class="link-solid"/>
+  <line x1="120" y1="200" x2="880" y2="200" class="link-solid"/>
+  <path d="M127,200 L127,230" class="link-solid" marker-end="url(#arrow)"/>
+  <path d="M322,200 L322,230" class="link-solid" marker-end="url(#arrow)"/>
+  <path d="M517,200 L517,230" class="link-solid" marker-end="url(#arrow)"/>
+  <path d="M702,200 L702,230" class="link-solid" marker-end="url(#arrow)"/>
+  <path d="M880,200 L880,230" class="link-solid" marker-end="url(#arrow)"/>
+  <!-- to row 2 via another rake -->
+  <line x1="110" y1="284" x2="110" y2="295" class="link-solid"/>
+  <line x1="110" y1="295" x2="890" y2="295" class="link-solid"/>
+  <path d="M110,295 L110,300" class="link-solid" marker-end="url(#arrow)"/>
+  <path d="M270,295 L270,300" class="link-solid" marker-end="url(#arrow)"/>
+  <path d="M425,295 L425,300" class="link-solid" marker-end="url(#arrow)"/>
+  <path d="M575,295 L575,300" class="link-solid" marker-end="url(#arrow)"/>
+  <path d="M730,295 L730,300" class="link-solid" marker-end="url(#arrow)"/>
+  <path d="M890,295 L890,300" class="link-solid" marker-end="url(#arrow)"/>
 
-  <!-- ComponentDB bridges to Lua land -->
-  <path d="M270,350 L470,400" class="link" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+  <!-- Band label: Lua API -->
+  <text x="40" y="394" class="band">Lua API (via ComponentDB)</text>
+  <line x1="320" y1="389" x2="960" y2="389" stroke="#1f2937" stroke-width="1"/>
+
+  <!-- Lua API block: three columns of namespaces -->
+  <g>
+    <rect x="40" y="406" width="920" height="134" rx="10" class="card-lua"/>
+    <text x="60"  y="432" class="api-hdr">LIFECYCLE</text>
+    <text x="60"  y="452" class="api-text">OnStart · OnUpdate · OnLateUpdate</text>
+    <text x="60"  y="468" class="api-text">OnCollisionEnter/Stay/Exit</text>
+    <text x="60"  y="484" class="api-text">OnTriggerEnter/Stay/Exit · OnDestroy</text>
+
+    <text x="370" y="432" class="api-hdr">RENDERING / INPUT</text>
+    <text x="370" y="452" class="api-text">Image · Text · Camera · Input</text>
+    <text x="370" y="468" class="api-text">Animation · Particles</text>
+    <text x="370" y="484" class="api-text">DebugOverlay</text>
+
+    <text x="660" y="432" class="api-hdr">SIMULATION / UTILITY</text>
+    <text x="660" y="452" class="api-text">Actor · Scene · Physics</text>
+    <text x="660" y="468" class="api-text">Rigidbody · CollisionLayers</text>
+    <text x="660" y="484" class="api-text">Event · Timer · Tween · Time · Audio · Application</text>
+
+    <text x="60"  y="522" class="card-sub">Components live in resources.&lt;game&gt;/component_types/*.lua.</text>
+    <text x="60"  y="536" class="card-sub">Each is a prototype table; instances inherit via a metatable set by ComponentDB::CreateComponent.</text>
+  </g>
+
+  <!-- ComponentDB → Lua -->
+  <path d="M322,284 L322,406" class="link" marker-end="url(#arrow)"/>
 </svg>

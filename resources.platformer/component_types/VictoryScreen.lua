@@ -43,10 +43,11 @@ function VictoryScreen:OnUpdate()
     Text.Draw("deaths " .. self.final_deaths,
         480, 315, "OpenSans-Regular", 22, 230, 120, 120, a)
 
-    if self.elapsed > 0.8 then
-        local pulse = math.floor((math.sin(self.elapsed * 3) * 0.5 + 0.5) * 180 + 75)
-        Text.Draw("SPACE  play again     ESC  quit",
-            195, 470, "OpenSans-Regular", 24, 200, 230, 255, pulse)
+    if self.elapsed > 0.4 then
+        -- Stay visible even at the pulse trough.
+        local pulse = math.floor((math.sin(self.elapsed * 3) * 0.5 + 0.5) * 100 + 155)
+        Text.Draw("SPACE  play again        ESC  quit",
+            172, 470, "OpenSans-Regular", 26, 210, 240, 255, pulse)
     end
 
     if self.elapsed > 0.8 and (Input.GetKeyDown("space") or Input.GetKeyDown("return")) then

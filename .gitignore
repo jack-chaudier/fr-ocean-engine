@@ -10,21 +10,14 @@ cmake_install.cmake
 CPackConfig.cmake
 CPackSourceConfig.cmake
 
-# Generated game assets (regenerated via create_assets.py)
-**/images/*.png
-**/audio/*.wav
-**/audio/*.mp3
-**/audio/*.ogg
-**/frames/
-!fr-ocean-logo.png
-
-# Logs and input replay
+# Runtime log / replay artifacts
 *.log
 render_logger.txt
 user_input.txt
 recorded_user_input.txt
 sdl_user_input.txt
 recorded_sdl_user_input.txt
+**/frames/
 
 # Platform junk
 .DS_Store
@@ -53,3 +46,7 @@ Desktop.ini
 # Secrets
 .env
 .env.*
+
+# Note: sample game images/ and audio/ are tracked so `git clone &&
+# cmake --build` produces a runnable engine. The create_assets.py
+# script regenerates them deterministically.

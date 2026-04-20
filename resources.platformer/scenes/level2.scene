@@ -42,6 +42,9 @@
         { "name": "Player", "template": "player",
           "components": { "Rigidbody": { "x": -8, "y": 2 } } },
 
-        { "name": "CameraController", "template": "camera_controller" }
+        { "name": "CameraController", "template": "camera_controller" },
+
+        { "name": "GameManager",
+          "components": { "GameManager": { "type": "GameManager" } } }
     ]
 }

@@ -84,10 +84,20 @@ private:
     /// Background clear color (RGB) for rendering
     inline static glm::ivec3 cleanColor;
 
+    /// When non-empty, Render() saves to this path iff `screenshot_capture_this_frame`.
+    inline static std::string screenshot_path_pending;
+    /// Set by GameLoop on the last frame so Render() saves at the end, not the start.
+    inline static bool screenshot_capture_this_frame = false;
+
 public:
     /// Main game loop. Runs forever until SDL_QUIT or a non-negative
     /// `max_frames` frame budget is reached (used by `--self-check`).
     static void GameLoop(int max_frames = -1);
+
+    /// If set before GameLoop starts, the final rendered frame is saved
+    /// to this path as a PNG. Requires `--self-check N` so there *is* a
+    /// final frame.
+    static void SetScreenshotPath(const std::string& path);
 
     /**
      * @brief Processes game logic updates for the current frame.

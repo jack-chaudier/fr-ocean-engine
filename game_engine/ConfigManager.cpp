@@ -95,3 +95,7 @@ glm::ivec3 ConfigManager::GetClearColor() {
 std::string ConfigManager::GetInitialScene() {
     return initialScene;
 }
+
+void ConfigManager::SetInitialSceneOverride(const std::string& scene) {
+    if (!scene.empty()) initialScene = scene;
+}
