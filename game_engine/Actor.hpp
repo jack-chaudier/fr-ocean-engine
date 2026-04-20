@@ -8,8 +8,7 @@
 //  Created by Jack Gaffney on 2/1/25.
 //
 
-#ifndef ACTOR_HPP
-#define ACTOR_HPP
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -148,4 +147,3 @@ public:
     void InjectReference(std::shared_ptr<luabridge::LuaRef> comp_ref);
 };
 
-#endif // ACTOR_HPP

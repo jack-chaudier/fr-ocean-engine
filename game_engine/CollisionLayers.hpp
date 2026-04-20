@@ -5,8 +5,7 @@
 //  Named collision layer system for physics filtering.
 //
 
-#ifndef CollisionLayers_hpp
-#define CollisionLayers_hpp
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -81,4 +80,3 @@ private:
     static std::string MakePairKey(const std::string& a, const std::string& b);
 };
 
-#endif /* CollisionLayers_hpp */

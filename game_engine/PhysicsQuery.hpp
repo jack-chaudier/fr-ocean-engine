@@ -3,8 +3,7 @@
 //
 //  Created by Jack Gaffney on 4/20/25.
 //
-#ifndef PhysicsQuery_hpp
-#define PhysicsQuery_hpp
+#pragma once
 
 #include "box2d/box2d.h"
 #include "Actor.hpp"
@@ -70,4 +69,3 @@ private:
                                             float distance);
 };
 
-#endif /* PhysicsQuery_hpp */

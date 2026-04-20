@@ -8,8 +8,7 @@
 //  Created by Jack Gaffney
 //
 
-#ifndef INPUT_H
-#define INPUT_H
+#pragma once
 
 #include <unordered_map>
 #include <vector>
@@ -249,4 +248,3 @@ private:
     static SDL_Scancode StringToScancode(const std::string& key);
 };
 
-#endif // INPUT_H

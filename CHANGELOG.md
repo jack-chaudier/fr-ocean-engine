@@ -1,235 +1,68 @@
 # Changelog
 
-All notable changes to FR-Ocean Engine will be documented in this file.
+All notable changes to FR-Ocean Engine will be documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.0] — 2026-04-20
 
-## [Unreleased]
-
-### Planned
-- Particle system with GPU acceleration
-- Tilemap rendering and collision
-- Sprite animation system
-- Level editor
-- Unit test framework
-- Profiling tools
-- Documentation website
-
-## [1.0.1] - 2025-12-29
+A cleanup, refactor, and polish release. The engine's public behavior is unchanged; the source tree is tighter, the sample story is clearer, and the test harness actually runs.
 
 ### Added
-- `Image.DrawRect()` function for filled rectangle rendering
-- `Rigidbody.RecreateFixtures()` for runtime fixture updates
-- Two new example games: Platformer and Puzzle Match
+- `--self-check [N]` CLI flag that runs N frames (default 60) and exits 0. Feeds the CI smoke test.
+- Two CTest targets (`smoke_platformer`, `smoke_demo`) fail on any `[FATAL]` or `[ERROR]` log line during the 60-frame run.
+- **`resources.demo/`** — a single-scene "kitchen sink" that exercises particles, tweens, timers, events, physics, input, and text in ~80 lines of Lua.
+- Platformer sample polish: variable jump height, coyote time, jump buffering, stomp/coin/death/land particles, camera shake on stomp + death, new `Spike` and `Flag` components, two-level progression with fade transitions, persistent score via `Scene.DontDestroy`, a sky + hills background sprite.
+- New SVG architecture and frame-flow diagrams under `docs/` for the README.
 
 ### Fixed
-- **Resources path override**: `--resources` flag now properly propagates to all subsystems
-- **Scene component overrides**: Position overrides now correctly update Box2D body positions
-- **Fixture dimension overrides**: Width/height overrides now recreate Box2D fixtures
-- **Trigger collision detection**: Changed filter to allow trigger-collider interactions (mask=0xFFFF)
-- **Collision callbacks**: Now properly skip C++ userdata components (Rigidbody)
-- **Actor destruction**: Deferred to after physics step to prevent Box2D crashes
-- **Component enabled checks**: Fixed crash when accessing `enabled` on Rigidbody userdata
+- **Shutdown-order crash**: `ComponentDB::Shutdown()` used to call `lua_close` before the cached `LuaRef` shared pointers were released, crashing on clean exit. Caches are now cleared before the state is closed, and every subsystem that pins Lua references is flushed from `Engine::~Engine()`.
+- `Debug.LogError` now routes to `LOG_ERROR` instead of `LOG_INFO`.
+- `DebugDraw::Init()` no longer leaks its singleton via `new`.
 
 ### Changed
-- Collision filter masks updated to 0xFFFF for universal detection
-- Actor destruction now defers component cleanup to `ActorsPendingDestruction()`
+- Hero sample game is now `resources.platformer/` (was `resources.example`). Space Shooter and Puzzle Match samples were retired — the platformer plus the feature demo cover the same engine surface with less maintenance.
+- `SceneDB::ProcessSceneUpdate` / `ProcessSceneLateUpdate` are now one `ProcessLifecycleCache` helper parameterised on method name.
+- `ComponentDB::overrideRigidbodyfValue` is now a small member-pointer table instead of a 22-branch if/else ladder.
+- `ComponentDB::CPPLog` routes through `LOG_INFO` instead of `std::cout`.
+- `SceneDB::clearLuaRefs` and `Engine::~Engine()` now release every LuaRef-holding subsystem before `lua_close`.
+- Every engine header uses `#pragma once` (was a mix of `#ifndef` / `#pragma once`).
+- `ApplicationAPI.h` / `EngineUtils.h` renamed to `.hpp` for consistency.
+- Engine version bumped to 1.1.0.
 
-## [1.0.0] - 2025-10-28
+### Removed
+- Stale IDE project files (`game_engine.sln`, `game_engine.vcxproj*`, `game_engine.xcodeproj/`). Use CMake generators.
+- Top-level `Makefile` (use `cmake --build` or `scripts/run_game.py`).
+- `README.md.backup`.
+- `docs/` static-site viewer (replaced with inline SVG diagrams; markdown renders on GitHub).
+- Unused `ComponentDB::CDB` map and `SceneDB::scene_path` field.
+- `resources.example/` (Space Shooter) and `resources.puzzle/` sample games.
 
-### Initial Release
+## [1.0.1] — 2025-12-29
 
-#### Added
+### Added
+- `Image.DrawRect()` function for filled rectangle rendering.
+- `Rigidbody.RecreateFixtures()` for runtime fixture updates.
+- Two new example games: Platformer and Puzzle Match.
 
-**Core Engine**
-- Main game loop with fixed timestep support
-- Component-based actor system
-- Scene management with JSON-based scene files
-- Cross-platform support (Windows, macOS, Linux)
+### Fixed
+- `--resources` flag now propagates to all subsystems.
+- Scene position overrides now update Box2D body positions.
+- Width/height overrides now recreate Box2D fixtures.
+- Trigger-collider interactions fixed (mask = 0xFFFF).
+- Collision callbacks skip C++ userdata components.
+- Actor destruction is deferred to after the physics step.
 
-**Rendering**
-- SDL2-based 2D rendering pipeline
-- Deferred rendering with z-order sorting
-- Sprite rendering with transforms (position, rotation, scale, pivot)
-- Color modulation and alpha blending
-- Camera system (position, zoom)
-- World-space and screen-space (UI) rendering modes
-- Pixel drawing for debugging
-- TrueType font rendering with SDL2_ttf
+## [1.0.0] — 2025-10-28
 
-**Input**
-- Keyboard input with frame-accurate state tracking
-- Mouse input (position, buttons, scroll wheel)
-- Input states: down, just pressed, just released
-- String-based key names for easy scripting
-
-**Physics**
-- Box2D integration for 2D rigid body dynamics
-- Three body types: dynamic, kinematic, static
-- Collision shapes: box, circle
-- Trigger volumes (sensors) for overlap detection
-- Physics properties: friction, bounciness, density, gravity scale
-- Collision callbacks: OnCollisionEnter/Stay/Exit
-- Trigger callbacks: OnTriggerEnter/Stay/Exit
-- Raycasting (single and multi-hit)
-
-**Audio**
-- SDL2_mixer integration for sound and music
-- Multi-channel audio mixing (16 channels)
-- Looping audio support
-- Per-channel volume control
-- Support for WAV, OGG, MP3 formats
-
-**Scripting**
-- Lua 5.4 scripting for game logic
-- LuaBridge for C++-Lua bindings
-- Component lifecycle: OnStart, OnUpdate, OnLateUpdate, OnDestroy
-- Full C++ API exposed to Lua:
-  - Actor manipulation
-  - Input queries
-  - Rendering (sprites, text, UI)
-  - Physics control
-  - Audio playback
-  - Scene management
-  - Camera control
-  - Debug logging
-
-**Build System**
-- CMake 3.16+ build configuration
-- Cross-platform build support
-- Vendored dependencies (no external package manager required)
-- Visual Studio project files (Windows)
-- Xcode project files (macOS)
-- Makefile (Linux/macOS alternative)
-
-**Documentation**
-- Comprehensive README with quickstart guide
-- API Reference with complete Lua API documentation
-- Architecture documentation explaining engine design
-- Contributing guidelines
-- Code standards and conventions
-- Example component and scene files
-
-#### Technical Details
-
-**Language and Standards**
-- C++17 standard
-- Modern C++ features (smart pointers, range-based loops, etc.)
-- RAII for resource management
-
-**Dependencies**
-- SDL2 (rendering, window management)
-- SDL2_image (texture loading)
-- SDL2_mixer (audio playback)
-- SDL2_ttf (font rendering)
-- Box2D (physics simulation)
-- Lua 5.4 (scripting)
-- LuaBridge (Lua-C++ binding)
-- GLM (math library)
-- RapidJSON (JSON parsing)
-
-**Performance**
-- Deferred rendering with batched draw calls
-- Texture caching for optimal reuse
-- Component function caching to avoid string lookups
-- Vector reserve for known sizes
-- Stable sorting for consistent z-ordering
-
-**File Formats**
-- JSON for configuration (game.config, rendering.config)
-- JSON for scenes (.scene files)
-- JSON for actor templates
-- Lua for component types
-- Standard image formats (PNG, JPG, BMP)
-- Standard audio formats (WAV, OGG, MP3)
-- TrueType fonts (TTF)
-
-### Known Issues
-
-- No particle system yet
-- No tilemap support
-- No sprite animation system
-- Limited collision filtering options
-- No visual level editor
-- No networking support
-
-### Platform Support
-
-**Windows**
-- Windows 10/11
-- Visual Studio 2019+
-- MSVC compiler
-
-**macOS**
-- macOS 12+
-- Xcode 12+
-- Clang compiler
-
-**Linux**
-- Ubuntu 20.04+, Fedora 35+, Arch Linux
-- GCC 9+, Clang 9+
-- X11 or Wayland
+Initial release. C++17 engine with SDL2 rendering, Box2D physics, SDL2_mixer audio, Lua 5.4 scripting via LuaBridge, scene/actor/component system, camera, fonts, input, collision callbacks, raycasting, and cross-platform CMake build.
 
 ---
 
-## Version History
+## Roadmap
 
-### Version Numbering
+Ideas, not commitments. Ordered by interest.
 
-FR-Ocean Engine follows [Semantic Versioning](https://semver.org/):
-
-- **MAJOR**: Incompatible API changes
-- **MINOR**: New features (backwards compatible)
-- **PATCH**: Bug fixes (backwards compatible)
-
-### Release Process
-
-1. Update CHANGELOG.md with release notes
-2. Update version in CMakeLists.txt
-3. Tag release in Git: `git tag v1.0.0`
-4. Build release binaries for all platforms
-5. Create GitHub release with binaries and notes
-
----
-
-## [Unreleased] - Future Roadmap
-
-### Version 1.1.0 (Planned Q1 2026)
-
-**Planned Features**:
-- Particle system with configurable emitters
-- Tilemap rendering and collision detection
-- Sprite animation with keyframes and state machines
-- Improved documentation and tutorials
-- Performance profiling tools
-
-### Version 1.2.0 (Planned Q2 2026)
-
-**Planned Features**:
-- Visual level editor (standalone tool)
-- Scene hierarchies and prefab system
-- Asset pipeline with hot-reloading
-- Advanced collision filtering (layers, masks)
-- Localization support
-
-### Version 2.0.0 (Future)
-
-**Major Changes** (Breaking API):
-- Consider Entity-Component-System (ECS) architecture
-- Multi-threading support (separate render thread)
-- Vulkan/Metal rendering backend option
-- LuaJIT for improved scripting performance
-- Built-in networking for multiplayer
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this changelog and the project.
-
----
-
-**Maintainer**: Jack Gaffney
-**Repository**: https://github.com/jackgaff/fr-ocean-engine
-**License**: MIT
+- Tilemap rendering and collision.
+- Sprite animation state machines (the `Animation` API exists but has no frame atlas tooling yet).
+- Asset hot-reload (watch `resources/` and re-read on change).
+- Networking — probably a thin UDP layer, not real multiplayer.
+- ECS-ish storage if/when the `inline static` caches in `SceneDB` become a real bottleneck.

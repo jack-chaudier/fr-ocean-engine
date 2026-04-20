@@ -5,8 +5,7 @@
 //  Provides value interpolation with easing functions.
 //
 
-#ifndef Tween_hpp
-#define Tween_hpp
+#pragma once
 
 #include <string>
 #include <vector>
@@ -115,4 +114,3 @@ private:
     static float ApplyEasing(float t, EaseType type);
 };
 
-#endif /* Tween_hpp */

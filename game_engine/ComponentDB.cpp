@@ -8,7 +8,7 @@
 #include "ComponentDB.hpp"
 #include "Actor.hpp"
 #include "SceneDB.hpp"
-#include "ApplicationAPI.h"
+#include "ApplicationAPI.hpp"
 #include "Input.hpp"
 #include "TextDB.hpp"
 #include "AudioDB.hpp"
@@ -25,6 +25,10 @@
 #include "Transform.hpp"
 #include "CollisionLayers.hpp"
 #include "ConfigManager.hpp"
+#include "AnimationDB.hpp"
+#include "ParticleSystem.hpp"
+#include "DebugDraw.hpp"
+#include "SceneTransition.hpp"
 
 void ComponentDB::Init() {
     using namespace luabridge;
@@ -34,8 +38,8 @@ void ComponentDB::Init() {
     
         // DEBUG
         .beginNamespace("Debug")
-            .addFunction("Log", ComponentDB::CPPLog)
-            .addFunction("LogError", ComponentDB::CPPLog)
+            .addFunction("Log", &ComponentDB::CPPLog)
+            .addFunction("LogError", &ComponentDB::CPPLogError)
         .endNamespace()
     
         // RIGIDBODY
@@ -61,6 +65,7 @@ void ComponentDB::Init() {
             .addProperty("precise", &Rigidbody::precise)
             .addProperty("has_collider", &Rigidbody::has_collider)
             .addProperty("has_trigger", &Rigidbody::has_trigger)
+            .addProperty("collision_layer", &Rigidbody::collision_layer)
             .addFunction("GetPosition", &Rigidbody::GetPosition)
             .addFunction("GetRotation", &Rigidbody::GetRotation)
             .addFunction("AddForce", &Rigidbody::AddForce)
@@ -156,11 +161,17 @@ void ComponentDB::Init() {
             .addFunction("GetPositionY", &Renderer::GetCameraPositionY)
             .addFunction("SetZoom", &Renderer::SetCameraZoomFactor)
             .addFunction("GetZoom", &Renderer::GetCameraZoomFactor)
+            .addFunction("Follow", &Renderer::Follow)
+            .addFunction("StopFollow", &Renderer::StopFollow)
+            .addFunction("Shake", &Renderer::Shake)
+            .addFunction("SetBounds", &Renderer::SetBounds)
+            .addFunction("ClearBounds", &Renderer::ClearBounds)
         .endNamespace()
         .beginNamespace("Scene")
             .addFunction("Load", &SceneDB::Load)
             .addFunction("GetCurrent", &SceneDB::GetCurrent)
             .addFunction("DontDestroy", &SceneDB::DontDestroy)
+            .addFunction("LoadWithTransition", &SceneTransition::StartTransition)
         .endNamespace()
 
         // TIME API
@@ -217,10 +228,67 @@ void ComponentDB::Init() {
             .addFunction("SetUniformScale", &Transform::SetUniformScale)
             .addFunction("GetUpDirection", &Transform::GetUpDirection)
             .addFunction("GetRightDirection", &Transform::GetRightDirection)
-        .endClass();
+        .endClass()
 
-    CDB.reserve(1000);
+        // ANIMATION SYSTEM
+        .beginNamespace("Animation")
+            .addFunction("Define", &AnimationDB::DefineAnimation)
+            .addFunction("Play", &AnimationDB::Play)
+            .addFunction("Stop", &AnimationDB::Stop)
+            .addFunction("SetFrame", &AnimationDB::SetFrame)
+            .addFunction("IsPlaying", &AnimationDB::IsPlaying)
+            .addFunction("GetCurrentFrame", &AnimationDB::GetCurrentFrame)
+            .addFunction("GetCurrentAnimation", &AnimationDB::GetCurrentAnimation)
+        .endNamespace()
+
+        // PARTICLE SYSTEM
+        .beginClass<ParticleConfig>("ParticleConfig")
+            .addConstructor<void (*) (void)>()
+            .addProperty("lifetime_min", &ParticleConfig::lifetime_min)
+            .addProperty("lifetime_max", &ParticleConfig::lifetime_max)
+            .addProperty("speed_min", &ParticleConfig::speed_min)
+            .addProperty("speed_max", &ParticleConfig::speed_max)
+            .addProperty("spread_angle", &ParticleConfig::spread_angle)
+            .addProperty("direction", &ParticleConfig::direction)
+            .addProperty("gravity", &ParticleConfig::gravity)
+            .addProperty("start_size", &ParticleConfig::start_size)
+            .addProperty("end_size", &ParticleConfig::end_size)
+            .addProperty("image_name", &ParticleConfig::image_name)
+            .addProperty("sorting_order", &ParticleConfig::sorting_order)
+            .addFunction("SetStartColor", &ParticleConfig::SetStartColor)
+            .addFunction("SetEndColor", &ParticleConfig::SetEndColor)
+        .endClass()
+        .beginNamespace("Particles")
+            .addFunction("Emit", &ParticleSystem::Emit)
+            .addFunction("GetActiveCount", &ParticleSystem::GetActiveCount)
+        .endNamespace()
+
+        // COLLISION LAYERS
+        .beginNamespace("CollisionLayers")
+            .addFunction("DefineLayer", &CollisionLayers::DefineLayer)
+            .addFunction("SetLayerCollision", &CollisionLayers::SetLayerCollision)
+            .addFunction("DoLayersCollide", &CollisionLayers::DoLayersCollide)
+        .endNamespace()
+
+        // DEBUG OVERLAY
+        .beginNamespace("DebugOverlay")
+            .addFunction("Toggle", &DebugDraw::ToggleEnabled)
+            .addFunction("SetEnabled", &DebugDraw::SetEnabled)
+            .addFunction("IsEnabled", &DebugDraw::IsEnabled)
+        .endNamespace();
+
     componentTypeCache.reserve(50);
+}
+
+void ComponentDB::Shutdown() {
+    // Caches of LuaRef must be released BEFORE lua_close, otherwise their
+    // destructors call luaL_unref on a closed state (crash).
+    componentTypeCache.clear();
+    runtime_comp_add = 0;
+    if (L) {
+        lua_close(L);
+        L = nullptr;
+    }
 }
 
 void ComponentDB::loadComponents(Actor * a, const rapidjson::Value &doc) {
@@ -304,8 +372,6 @@ void ComponentDB::loadComponents(Actor * a, const rapidjson::Value &doc) {
             a->components[comp_key] = component_ref;
             a->component_keys.insert(comp_key);
             a->InjectReference(component_ref);
-            
-            CDB[comp_key] = component_ref;
         }
     }
 }
@@ -359,8 +425,12 @@ std::shared_ptr<luabridge::LuaRef> ComponentDB::CreateComponent(const std::strin
     return std::make_shared<luabridge::LuaRef>(instance_table);
 }
 
-void ComponentDB::CPPLog(std::string message) {
-    std::cout << message << std::endl;
+void ComponentDB::CPPLog(const std::string& message) {
+    LOG_INFO(message);
+}
+
+void ComponentDB::CPPLogError(const std::string& message) {
+    LOG_ERROR(message);
 }
 
 void ComponentDB::overrideLuaRefValue(luabridge::LuaRef& table, const std::string & name, const rapidjson::Value& prop_value) {
@@ -374,49 +444,55 @@ void ComponentDB::overrideLuaRefValue(luabridge::LuaRef& table, const std::strin
         table[name] = prop_value.GetFloat();
 }
 
-void ComponentDB::overrideRigidbodyfValue(luabridge::LuaRef &table, const std::string &name, const rapidjson::Value &prop_value) {
-    Rigidbody* rb = table.cast<Rigidbody*>();
+namespace {
+    const std::unordered_map<std::string, float Rigidbody::*> kRigidbodyFloatFields = {
+        {"x", &Rigidbody::x},
+        {"y", &Rigidbody::y},
+        {"width", &Rigidbody::width},
+        {"height", &Rigidbody::height},
+        {"radius", &Rigidbody::radius},
+        {"friction", &Rigidbody::friction},
+        {"bounciness", &Rigidbody::bounciness},
+        {"gravity_scale", &Rigidbody::gravity_scale},
+        {"density", &Rigidbody::density},
+        {"angular_friction", &Rigidbody::angular_friction},
+        {"rotation", &Rigidbody::rotation},
+        {"trigger_width", &Rigidbody::trigger_width},
+        {"trigger_height", &Rigidbody::trigger_height},
+        {"trigger_radius", &Rigidbody::trigger_radius},
+    };
+    const std::unordered_map<std::string, std::string Rigidbody::*> kRigidbodyStringFields = {
+        {"body_type", &Rigidbody::body_type},
+        {"collider_type", &Rigidbody::collider_type},
+        {"trigger_type", &Rigidbody::trigger_type},
+        {"collision_layer", &Rigidbody::collision_layer},
+    };
+    const std::unordered_map<std::string, bool Rigidbody::*> kRigidbodyBoolFields = {
+        {"precise", &Rigidbody::precise},
+        {"has_collider", &Rigidbody::has_collider},
+        {"has_trigger", &Rigidbody::has_trigger},
+    };
+}
 
-    if (name == "x")
-        rb->x = prop_value.GetFloat();
-    else if (name == "y")
-        rb->y = prop_value.GetFloat();
-    else if (name == "width")
-        rb->width = prop_value.GetFloat();
-    else if (name == "height")
-        rb->height = prop_value.GetFloat();
-    else if (name == "gravity_scale")
-        rb->gravity_scale = prop_value.GetFloat();
-    else if (name == "density")
-        rb->density = prop_value.GetFloat();
-    else if (name == "angular_friction")
-        rb->angular_friction = prop_value.GetFloat();
-    else if (name == "rotation")
-        rb->rotation = prop_value.GetFloat();
-    else if (name == "body_type")
-        rb->body_type = prop_value.GetString();
-    else if (name == "precise")
-        rb->precise = prop_value.GetBool();
-    else if (name == "has_collider")
-        rb->has_collider = prop_value.GetBool();
-    else if (name == "has_trigger")
-        rb->has_trigger = prop_value.GetBool();
-    else if (name == "friction")
-        rb->friction = prop_value.GetFloat();
-    else if (name == "bounciness")
-        rb->bounciness = prop_value.GetFloat();
-    else if (name == "radius")
-        rb->radius = prop_value.GetFloat();
-    else if (name == "collider_type")
-        rb->collider_type = prop_value.GetString();
-    else if (name == "trigger_type")
-        rb->trigger_type = prop_value.GetString();
-    else if (name == "trigger_width")
-        rb->trigger_width = prop_value.GetFloat();
-    else if (name == "trigger_height")
-        rb->trigger_height = prop_value.GetFloat();
-    else if (name == "trigger_radius")
-        rb->trigger_radius = prop_value.GetFloat();
+void ComponentDB::overrideRigidbodyfValue(luabridge::LuaRef& table, const std::string& name, const rapidjson::Value& prop_value) {
+    Rigidbody* rb = table.cast<Rigidbody*>();
+    if (!rb) return;
+
+    if (auto it = kRigidbodyFloatFields.find(name); it != kRigidbodyFloatFields.end()) {
+        if (prop_value.IsNumber()) rb->*(it->second) = prop_value.GetFloat();
+        else LOG_WARNING("Rigidbody property '" + name + "' expects a number, skipping");
+        return;
+    }
+    if (auto it = kRigidbodyStringFields.find(name); it != kRigidbodyStringFields.end()) {
+        if (prop_value.IsString()) rb->*(it->second) = prop_value.GetString();
+        else LOG_WARNING("Rigidbody property '" + name + "' expects a string, skipping");
+        return;
+    }
+    if (auto it = kRigidbodyBoolFields.find(name); it != kRigidbodyBoolFields.end()) {
+        if (prop_value.IsBool()) rb->*(it->second) = prop_value.GetBool();
+        else LOG_WARNING("Rigidbody property '" + name + "' expects a bool, skipping");
+        return;
+    }
 }
 void ComponentDB::EstablishInheritance(luabridge::LuaRef& instance_table, luabridge::LuaRef& parent_table) {
     luabridge::LuaRef new_metatable = luabridge::newTable(L);

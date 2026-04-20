@@ -8,8 +8,7 @@
 //  Created by Jack Gaffney on 2/9/25.
 //
 
-#ifndef ImageDB_hpp
-#define ImageDB_hpp
+#pragma once
 
 #include "SDL2/SDL.h"
 #include "SDL2_image/SDL_image.h"
@@ -230,7 +229,7 @@ public:
      *
      * @note Used for particle systems or procedural effects
      */
-    void CreateDefaultParticleTextureWithName(const std::string& name);
+    static void CreateDefaultParticleTextureWithName(const std::string& name);
 
 private:
     /// Texture cache: image name -> SDL_Texture*
@@ -250,4 +249,3 @@ private:
     inline static size_t pixel_request_counter = 0;
 };
 
-#endif /* ImageDB_hpp */

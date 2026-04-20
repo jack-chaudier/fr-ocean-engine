@@ -6,8 +6,7 @@
 //  Provides specific exception types for different error categories.
 //
 
-#ifndef EngineException_hpp
-#define EngineException_hpp
+#pragma once
 
 #include <stdexcept>
 #include <string>
@@ -128,4 +127,3 @@ public:
         : EngineException("Physics error: " + message) {}
 };
 
-#endif /* EngineException_hpp */

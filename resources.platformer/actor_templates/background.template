@@ -1,0 +1,6 @@
+{
+    "name": "Background",
+    "components": {
+        "Background": { "type": "Background" }
+    }
+}

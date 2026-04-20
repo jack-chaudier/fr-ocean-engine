@@ -5,15 +5,14 @@
 //  Created by Jack Gaffney on 2/8/25.
 //
 
-#ifndef ConfigManager_hpp
-#define ConfigManager_hpp
+#pragma once
 
 #include <string>
 #include <vector>
 #include <memory>
 #include <optional>
 #include "glm/glm.hpp"
-#include "EngineUtils.h"
+#include "EngineUtils.hpp"
 #include "rapidjson/document.h"
 
 class Actor;
@@ -59,4 +58,3 @@ private:
     static void LoadGame();
 };
 
-#endif /* ConfigManager_hpp */

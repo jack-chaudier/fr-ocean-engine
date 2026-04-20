@@ -5,8 +5,7 @@
 //  Provides decoupled event-based communication between components.
 //
 
-#ifndef EventSystem_hpp
-#define EventSystem_hpp
+#pragma once
 
 #include <string>
 #include <vector>
@@ -85,4 +84,3 @@ private:
     inline static int next_subscription_id = 1;
 };
 
-#endif /* EventSystem_hpp */

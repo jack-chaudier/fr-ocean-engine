@@ -5,8 +5,7 @@
 //  Non-physics transform component for position, rotation, and scale.
 //
 
-#ifndef Transform_hpp
-#define Transform_hpp
+#pragma once
 
 #include "box2d/box2d.h"
 #include <cmath>
@@ -95,4 +94,3 @@ public:
     }
 };
 
-#endif /* Transform_hpp */

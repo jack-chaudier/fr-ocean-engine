@@ -5,8 +5,7 @@
 //  Provides delayed and repeating task execution.
 //
 
-#ifndef Scheduler_hpp
-#define Scheduler_hpp
+#pragma once
 
 #include <string>
 #include <vector>
@@ -84,4 +83,3 @@ private:
     inline static int next_task_id = 1;
 };
 
-#endif /* Scheduler_hpp */

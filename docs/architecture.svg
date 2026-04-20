@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .title      { fill:#f8fafc; font-size:26px; font-weight:600; }
+      .subtitle   { fill:#94a3b8; font-size:13px; }
+      .box        { fill:#1e293b; stroke:#334155; stroke-width:1.5; rx:8; ry:8; }
+      .box-core   { fill:#0b3a5c; stroke:#38bdf8; stroke-width:1.5; rx:8; ry:8; }
+      .box-lua    { fill:#3a2e0b; stroke:#facc15; stroke-width:1.5; rx:8; ry:8; }
+      .box-user   { fill:#0b3a2e; stroke:#34d399; stroke-width:1.5; rx:8; ry:8; }
+      .label      { fill:#f1f5f9; font-size:13px; font-weight:500; }
+      .sub        { fill:#cbd5e1; font-size:11px; }
+      .link       { stroke:#94a3b8; stroke-width:1.3; fill:none; }
+    </style>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#bg)"/>
+
+  <text x="40"  y="48" class="title">FR-Ocean Engine</text>
+  <text x="40"  y="70" class="subtitle">C++17 core · SDL2 rendering · Box2D physics · Lua scripting</text>
+
+  <!-- Row 1 -->
+  <g>
+    <rect x="40"  y="110" width="160" height="60" class="box-user"/>
+    <text x="120" y="138" text-anchor="middle" class="label">main.cpp</text>
+    <text x="120" y="156" text-anchor="middle" class="sub">CLI &amp; SDL init</text>
+  </g>
+  <g>
+    <rect x="220" y="110" width="160" height="60" class="box-user"/>
+    <text x="300" y="138" text-anchor="middle" class="label">Engine</text>
+    <text x="300" y="156" text-anchor="middle" class="sub">game loop</text>
+  </g>
+  <g>
+    <rect x="400" y="110" width="160" height="60" class="box-user"/>
+    <text x="480" y="138" text-anchor="middle" class="label">ConfigManager</text>
+    <text x="480" y="156" text-anchor="middle" class="sub">game / render JSON</text>
+  </g>
+  <g>
+    <rect x="580" y="110" width="160" height="60" class="box-user"/>
+    <text x="660" y="138" text-anchor="middle" class="label">Logger</text>
+    <text x="660" y="156" text-anchor="middle" class="sub">leveled, timestamped</text>
+  </g>
+  <g>
+    <rect x="760" y="110" width="160" height="60" class="box-user"/>
+    <text x="840" y="138" text-anchor="middle" class="label">SceneTransition</text>
+    <text x="840" y="156" text-anchor="middle" class="sub">fade in / out</text>
+  </g>
+
+  <!-- Row 2: Subsystems -->
+  <g>
+    <rect x="40"  y="210" width="140" height="60" class="box-core"/>
+    <text x="110" y="238" text-anchor="middle" class="label">SceneDB</text>
+    <text x="110" y="256" text-anchor="middle" class="sub">actors · caches</text>
+  </g>
+  <g>
+    <rect x="200" y="210" width="140" height="60" class="box-core"/>
+    <text x="270" y="238" text-anchor="middle" class="label">ComponentDB</text>
+    <text x="270" y="256" text-anchor="middle" class="sub">Lua bindings</text>
+  </g>
+  <g>
+    <rect x="360" y="210" width="140" height="60" class="box-core"/>
+    <text x="430" y="238" text-anchor="middle" class="label">Renderer</text>
+    <text x="430" y="256" text-anchor="middle" class="sub">SDL2 · camera</text>
+  </g>
+  <g>
+    <rect x="520" y="210" width="140" height="60" class="box-core"/>
+    <text x="590" y="238" text-anchor="middle" class="label">RigidbodyWorld</text>
+    <text x="590" y="256" text-anchor="middle" class="sub">Box2D</text>
+  </g>
+  <g>
+    <rect x="680" y="210" width="140" height="60" class="box-core"/>
+    <text x="750" y="238" text-anchor="middle" class="label">Input</text>
+    <text x="750" y="256" text-anchor="middle" class="sub">keys · mouse</text>
+  </g>
+
+  <!-- Row 3: Subsystems 2 -->
+  <g>
+    <rect x="40"  y="290" width="140" height="60" class="box-core"/>
+    <text x="110" y="318" text-anchor="middle" class="label">ImageDB</text>
+    <text x="110" y="336" text-anchor="middle" class="sub">deferred draw</text>
+  </g>
+  <g>
+    <rect x="200" y="290" width="140" height="60" class="box-core"/>
+    <text x="270" y="318" text-anchor="middle" class="label">TextDB</text>
+    <text x="270" y="336" text-anchor="middle" class="sub">SDL2_ttf</text>
+  </g>
+  <g>
+    <rect x="360" y="290" width="140" height="60" class="box-core"/>
+    <text x="430" y="318" text-anchor="middle" class="label">AudioDB</text>
+    <text x="430" y="336" text-anchor="middle" class="sub">SDL2_mixer</text>
+  </g>
+  <g>
+    <rect x="520" y="290" width="140" height="60" class="box-core"/>
+    <text x="590" y="318" text-anchor="middle" class="label">ParticleSystem</text>
+    <text x="590" y="336" text-anchor="middle" class="sub">pooled emitters</text>
+  </g>
+  <g>
+    <rect x="680" y="290" width="140" height="60" class="box-core"/>
+    <text x="750" y="318" text-anchor="middle" class="label">Tween · Timer</text>
+    <text x="750" y="336" text-anchor="middle" class="sub">Scheduler</text>
+  </g>
+
+  <!-- Row 4: Lua land -->
+  <g>
+    <rect x="40"  y="400" width="860" height="90" class="box-lua"/>
+    <text x="470" y="430" text-anchor="middle" class="label">Lua components (resources.*/component_types/*.lua)</text>
+    <text x="470" y="452" text-anchor="middle" class="sub">OnStart · OnUpdate · OnLateUpdate · OnCollisionEnter · OnTriggerEnter · OnDestroy</text>
+    <text x="470" y="472" text-anchor="middle" class="sub">Actor · Input · Image · Text · Audio · Camera · Scene · Physics · Event · Timer · Tween · Particles · Animation · CollisionLayers</text>
+  </g>
+
+  <!-- Flow arrows: main -> Engine -> SceneDB row -->
+  <path d="M200,140 L220,140" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L110,210" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L270,210" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L430,210" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L590,210" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L750,210" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L110,290" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L270,290" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L430,290" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L590,290" class="link" marker-end="url(#arrow)"/>
+  <path d="M300,170 L750,290" class="link" marker-end="url(#arrow)"/>
+
+  <!-- ComponentDB bridges to Lua land -->
+  <path d="M270,350 L470,400" class="link" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+</svg>

@@ -1,676 +1,175 @@
-# FR-Ocean Engine Architecture
+# FR-Ocean Engine — Architecture
 
-## Table of Contents
-- [Overview](#overview)
-- [Core Architecture](#core-architecture)
-- [Subsystem Details](#subsystem-details)
-- [Data Flow](#data-flow)
-- [Component Lifecycle](#component-lifecycle)
-- [Rendering Pipeline](#rendering-pipeline)
-- [Physics System](#physics-system)
-- [Scripting System](#scripting-system)
-- [Design Patterns](#design-patterns)
+A concrete tour of the engine as it exists today. For the runtime API surface, see [API_REFERENCE.md](API_REFERENCE.md).
 
-## Overview
+<p align="center">
+  <img src="docs/architecture.svg" alt="Architecture" width="880">
+</p>
 
-FR-Ocean Engine is a component-based 2D game engine built with C++17. It features a hybrid architecture where the core engine systems are written in C++ for performance, while game logic is scripted in Lua for flexibility and rapid iteration.
+## Shape
 
-### Key Design Principles
+- **C++17 core** owning the loop, rendering, physics, audio, and the Lua state.
+- **Lua 5.4 scripts** define game logic as components attached to actors.
+- **JSON** declares scenes and actor templates.
+- **CMake** builds everything; all third-party libs are vendored.
 
-1. **Component-Based Architecture**: Actors are containers for components that define behavior
-2. **Separation of Concerns**: Clear boundaries between C++ engine systems and Lua game logic
-3. **Deferred Rendering**: Draw calls are queued and batched for optimal performance
-4. **Static Singleton Pattern**: Global access to engine systems via static methods
-5. **Data-Driven Design**: Configuration and scenes defined in JSON
+No DLLs to install on macOS or Windows. On Linux, SDL2 comes from the distro.
 
-### Technology Stack
-
-- **Language**: C++17
-- **Graphics**: SDL2, SDL2_image
-- **Audio**: SDL2_mixer
-- **Text**: SDL2_ttf (TrueType fonts)
-- **Physics**: Box2D (2D rigid body dynamics)
-- **Scripting**: Lua 5.4 with LuaBridge
-- **Math**: GLM (OpenGL Mathematics)
-- **JSON**: RapidJSON
-- **Build System**: CMake 3.16+
-
-## Core Architecture
-
-### System Overview
+## File layout
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                         Engine                               │
-│  ┌────────────┐  ┌────────────┐  ┌──────────────────────┐   │
-│  │  GameLoop  │─▶│   Update   │─▶│       Render         │   │
-│  └────────────┘  └────────────┘  └──────────────────────┘   │
-└──────────────────────────────────────────────────────────────┘
-          │                │                    │
-          ▼                ▼                    ▼
-    ┌─────────┐      ┌──────────┐        ┌──────────┐
-    │  Input  │      │ SceneDB  │        │ Renderer │
-    └─────────┘      └──────────┘        └──────────┘
-                          │                    │
-                          ▼                    ▼
-                  ┌───────────────┐     ┌────────────┐
-                  │  ComponentDB  │     │  ImageDB   │
-                  │      +        │     │  TextDB    │
-                  │  Actor System │     └────────────┘
-                  └───────────────┘
-                          │
-                ┌─────────┴─────────┐
-                ▼                   ▼
-        ┌──────────────┐    ┌──────────────┐
-        │ RigidbodyWorld│    │   AudioDB    │
-        └──────────────┘    └──────────────┘
+game_engine/
+  main.cpp            CLI, SDL init, SdlLifecycle RAII
+  Engine.{hpp,cpp}    Game loop: Input → Update → Render
+  ConfigManager       game.config / rendering.config parsing
+  Logger              leveled, timestamped, thread-safe
+  SceneDB             actor lifecycle, caches, scene load
+  ComponentDB         Lua state + LuaBridge bindings
+  Actor               components map, collision callbacks
+  Renderer            SDL2 window + renderer + camera
+  ImageDB             deferred sprite queue, texture cache
+  TextDB              SDL2_ttf, deferred text queue
+  AudioDB             SDL2_mixer channels
+  Rigidbody           Box2D body wrapper
+  RigidbodyWorld      Box2D world step + contact listener
+  CollisionListener   contact callbacks → Lua
+  CollisionLayers     named collision filter pairs
+  PhysicsQuery        Raycast / RaycastAll
+  Input               keyboard + mouse state
+  Time                dt, total time, scale, frame count
+  EventSystem         pub/sub for Lua callbacks
+  Scheduler           Timer.After / Timer.Every
+  Tween               float/vec tween on Lua tables
+  AnimationDB         sprite-sheet animation (frames + speed)
+  ParticleSystem      pooled emitters
+  DebugDraw           Box2D b2Draw visualization (F1)
+  SceneTransition     fade-in / fade-out between scenes
+  Transform           transform helper for components
+  EngineException.hpp exception hierarchy
+  EngineUtils.hpp     JSON file read helper
+  ApplicationAPI.hpp  Quit / Sleep / OpenURL / GetFrame
 ```
 
-### Main Components
+## Game loop
 
-| Component | Responsibility | Lifecycle |
-|-----------|---------------|-----------|
-| **Engine** | Main game loop orchestration | Singleton, lives for entire application |
-| **Renderer** | SDL2 window and rendering context | Created by Engine, destroyed on exit |
-| **Input** | Keyboard, mouse, and event processing | Static singleton, initialized once |
-| **SceneDB** | Actor and scene management | Instance per scene, manages actor lifecycle |
-| **ComponentDB** | Lua state and component type management | Static singleton, one Lua state globally |
-| **ImageDB** | Sprite rendering and texture caching | Static singleton, deferred rendering |
-| **TextDB** | Font rendering and text drawing | Static singleton, deferred rendering |
-| **AudioDB** | Sound effect and music playback | Static singleton, channel-based mixing |
-| **RigidbodyWorld** | Box2D physics world simulation | One per scene, stepped every frame |
+<p align="center">
+  <img src="docs/frame-flow.svg" alt="Frame flow" width="880">
+</p>
 
-## Subsystem Details
-
-### Engine (Main Loop)
-
-The Engine class is the central orchestrator that manages initialization and the main game loop.
-
-**Initialization Order**:
-1. Parse `game.config` and `rendering.config` (JSON)
-2. Initialize TextDB (SDL_ttf)
-3. Initialize AudioDB (SDL_mixer)
-4. Initialize Input system
-5. Initialize ComponentDB (Lua state + API bindings)
-6. Create Renderer (SDL2 window/renderer)
-7. Load initial scene from configuration
-
-**Game Loop**:
-```cpp
-while (!quit) {
-    Input::BeginFrame();
-
-    // Process OS events
-    while (SDL_PollEvent(&event)) {
-        Input::ProcessEvent(event);
-        if (event.type == SDL_QUIT) quit = true;
-    }
-
-    Engine::Update();  // Game logic + physics
-    Engine::Render();  // Deferred rendering
-
-    Helper::SDL_RenderPresent_EX();  // Swap buffers
-}
-```
-
-### Scene Management
-
-**SceneDB** manages all actors in the current scene and handles scene transitions.
-
-**Scene Loading**:
-1. Parse `.scene` JSON file from `resources/scenes/`
-2. For each actor definition:
-   - Create Actor instance with unique ID
-   - Load actor template (JSON with component definitions)
-   - Instantiate components via ComponentDB
-   - Add actor to scene
-
-**Actor Lifecycle**:
-- **Creation**: `SceneDB::InstantiateActor(template_name)`
-- **Update Phases**:
-  - `ProcessOnStart()`: Call OnStart() for new components (once)
-  - `ProcessUpdate()`: Call OnUpdate() for all components (every frame)
-  - `ProcessLateUpdate()`: Call OnLateUpdate() after physics (every frame)
-- **Destruction**: `SceneDB::DestroyActor(actor)` (deferred until end of frame)
-
-**Scene Persistence**:
-- By default, all actors are destroyed when changing scenes
-- `SceneDB::DontDestroy(actor)` marks an actor to persist across scenes
-
-### Component System
-
-**ComponentDB** bridges C++ engine systems with Lua game logic.
-
-**Component Type Loading**:
-```lua
--- Example: PlayerController.lua in resources/component_types/
-PlayerController = {
-    speed = 5.0,
-    jump_force = 10.0,
-}
-
-function PlayerController:OnStart()
-    self.rb = self.actor:GetComponent("Rigidbody")
-end
-
-function PlayerController:OnUpdate()
-    if Input.GetKey("space") then
-        self.rb:AddForce({x = 0, y = -self.jump_force})
-    end
-end
-```
-
-**Component Instantiation**:
-1. ComponentDB loads all `.lua` files from `resources/component_types/`
-2. Each file creates a Lua table (prototype) cached in `componentTypeCache`
-3. CreateComponent() creates a new instance table with prototype inheritance
-4. Lua metatable `__index` implements prototype chain
-
-**C++ API Bindings** (via LuaBridge):
-- Actor manipulation
-- Input queries
-- Image/Text/Audio rendering
-- Physics control
-- Scene management
-- Camera control
-- Debug logging
-
-### Rendering System
-
-**ImageDB** implements deferred rendering for sprites:
-
-**Render Pipeline**:
-```
-Update Phase:
-  └─▶ Components call Image.Draw() / Image.DrawUI()
-      └─▶ ImageDB::QueueImageDraw() / QueueImageDrawUI()
-          └─▶ ImageDrawRequest added to queue
-
-Render Phase:
-  └─▶ ImageDB::RenderAndClearAllImages()
-      ├─▶ Sort queue by (sorting_order, order_index)
-      ├─▶ For each request:
-      │   ├─▶ Apply camera transform (if not UI)
-      │   ├─▶ SDL_RenderCopyEx() with rotation/scale/color
-      │   └─▶ Render to screen
-      └─▶ Clear queue
-```
-
-**Features**:
-- Texture caching (load once, reuse)
-- Z-order sorting (sorting_order parameter)
-- Camera system (world-space vs UI-space)
-- Transform support (position, rotation, scale, pivot)
-- Color modulation (tint, alpha)
-
-### Physics System
-
-**Box2D Integration** via Rigidbody component:
-
-**World Setup**:
-```cpp
-RigidbodyWorld world(gravity_x, gravity_y);
-world.Step(dt);  // Called every frame in Engine::Update()
-```
-
-**Body Types**:
-- **Dynamic**: Affected by forces, has mass (players, projectiles)
-- **Kinematic**: Moves via velocity, ignores forces (moving platforms)
-- **Static**: Immovable, infinite mass (walls, floors)
-
-**Collision Detection**:
-- **Collider**: Physical collision shape (box or circle)
-- **Trigger**: Sensor shape (overlap detection without collision response)
-- **Callbacks**: OnCollisionEnter/Stay/Exit, OnTriggerEnter/Stay/Exit
-
-**Raycasting**:
-```lua
--- Single raycast
-hit = Physics.Raycast(origin, direction, distance)
-if hit.actor ~= nil then
-    print("Hit: " .. hit.actor:GetName())
-end
-
--- Multi-raycast (all hits)
-hits = Physics.RaycastAll(origin, direction, distance)
-for i, hit in ipairs(hits) do
-    print("Hit " .. i .. ": " .. hit.actor:GetName())
-end
-```
-
-## Data Flow
-
-### Frame Update Flow
+Inside `Engine::GameLoop(int max_frames)`:
 
 ```
-BeginFrame()
-    └─▶ Input::BeginFrame()
-        └─▶ Clear transient input state
-
-SDL Event Loop
-    └─▶ Input::ProcessEvent()
-        └─▶ Update keyboard/mouse state
-
-Engine::Update()
-    └─▶ SceneDB::UpdateScene()
-        ├─▶ ProcessOnStart()
-        │   └─▶ Call OnStart() for new components
-        ├─▶ ProcessUpdate()
-        │   └─▶ Call OnUpdate() for all components
-        │       └─▶ Components queue draw/audio requests
-        ├─▶ RigidbodyWorld::Step()
-        │   └─▶ Box2D physics simulation
-        │   └─▶ Collision callbacks
-        ├─▶ ProcessLateUpdate()
-        │   └─▶ Call OnLateUpdate() for all components
-        └─▶ ActorsPendingDestruction()
-            └─▶ Destroy marked actors
-
-Engine::Render()
-    ├─▶ Renderer::clear()
-    ├─▶ ImageDB::RenderAndClearAllImages()
-    │   └─▶ Draw all sprites (sorted by z-order)
-    ├─▶ TextDB::RenderQueuedTexts()
-    │   └─▶ Draw all text
-    └─▶ ImageDB::RenderAndClearAllPixels()
-        └─▶ Draw debug pixels
-
-Renderer::present()
-    └─▶ SDL_RenderPresent() - Swap buffers
-
-Input::LateUpdate()
-    └─▶ Transition input states (JUST_DOWN → DOWN, etc.)
+loop:
+  Input::BeginFrame()
+  while SDL_PollEvent(&e):
+    if SDL_QUIT: quit
+    if SDL_KEYDOWN F1: DebugDraw::ToggleEnabled()
+    Input::ProcessEvent(e)
+  Engine::Update()          // time, scene lifecycle, schedulers
+  Engine::Render()          // clear, images, particles, text, debug, present
+  Input::LateUpdate()
+  if max_frames >= 0 and frames+1 >= max_frames: quit
 ```
 
-## Component Lifecycle
+`Engine::Update()`:
 
-### Lifecycle Methods (Lua)
+1. `Time::Update()`.
+2. If a scene load is pending (from `Scene.Load` or `SceneTransition`), clear the schedulers and load it.
+3. Tick `Scheduler`, `Tween`, `AnimationDB`, `ParticleSystem`, `SceneTransition`, `Renderer::UpdateCamera`.
+4. `SceneDB::UpdateScene()`: `OnStart` for fresh components → deferred Rigidbody init → `OnUpdate` → `OnLateUpdate` → remove-queued components → destroy-queued actors → step Box2D.
 
-```lua
-Component = {}
+`Engine::Render()`:
 
--- Called once on the first frame after creation
-function Component:OnStart()
-    -- Initialization code
-end
+1. Clear the color buffer.
+2. Drain `ImageDB` in `sorting_order` order (world + UI).
+3. Render queued particles with camera transform.
+4. Drain `TextDB`.
+5. Drain pixel queue (for debug / rects).
+6. `DebugDraw::Render()` if enabled (Box2D bodies overlay).
+7. `SceneTransition::Render()` (fade overlay).
+8. `Renderer::present()`.
 
--- Called every frame during update phase
-function Component:OnUpdate()
-    -- Game logic
-end
-
--- Called every frame after physics simulation
-function Component:OnLateUpdate()
-    -- Post-physics logic (e.g., camera follow)
-end
-
--- Called when actor or component is destroyed
-function Component:OnDestroy()
-    -- Cleanup code
-end
-
--- Collision callbacks (requires Rigidbody component)
-function Component:OnCollisionEnter(other)
-    -- Physical collision started
-end
-
-function Component:OnCollisionStay(other)
-    -- Physical collision continuing
-end
-
-function Component:OnCollisionExit(other)
-    -- Physical collision ended
-end
-
--- Trigger callbacks (requires Rigidbody with trigger)
-function Component:OnTriggerEnter(other)
-    -- Trigger overlap started
-end
-
-function Component:OnTriggerStay(other)
-    -- Trigger overlap continuing
-end
-
-function Component:OnTriggerExit(other)
-    -- Trigger overlap ended
-end
-```
-
-### State Transitions
+## Component lifecycle
 
 ```
-Component Created
-    │
-    ├─▶ Added to actor.components
-    ├─▶ Added to SceneDB.on_start_cache
-    └─▶ Component reference stored
-
-First Frame (OnStart)
-    │
-    ├─▶ SceneDB::ProcessOnStart()
-    ├─▶ Call component:OnStart()
-    ├─▶ Move to on_update_cache
-    └─▶ Move to on_late_update_cache
-
-Every Frame (OnUpdate/OnLateUpdate)
-    │
-    ├─▶ SceneDB::ProcessUpdate()
-    │   └─▶ Call component:OnUpdate()
-    │
-    ├─▶ Physics::Step()
-    │   └─▶ Collision callbacks
-    │
-    └─▶ SceneDB::ProcessLateUpdate()
-        └─▶ Call component:OnLateUpdate()
-
-Component Destroyed
-    │
-    ├─▶ Call component:OnDestroy()
-    ├─▶ Remove from all caches
-    ├─▶ Remove from actor.components
-    └─▶ Rigidbody cleanup (if applicable)
+scene load → Actor created → components attached (Lua tables + Rigidbody userdata)
+                         ↓
+               ProcessSceneOnStart    → every component's OnStart() exactly once
+                         ↓ (each frame)
+               ProcessLifecycleCache("OnUpdate")
+                         ↓
+               physics step + collision callbacks (OnCollisionEnter/Stay/Exit, OnTriggerEnter/Stay/Exit)
+                         ↓
+               ProcessLifecycleCache("OnLateUpdate")
+                         ↓
+               RemoveActorComponents  (per-actor removal queue)
+                         ↓
+               ActorsPendingDestruction (defers Box2D-body destruction out of physics step)
 ```
 
-## Rendering Pipeline
+`ProcessLifecycleCache` is the same helper for both update passes; it auto-disables a component after three throws from `pcall`-style error handling.
 
-### Deferred Rendering Architecture
+## Shutdown ordering
 
-The engine uses **deferred rendering** to optimize draw calls and enable sorting:
+This is load-bearing and easy to break. Anything caching `std::shared_ptr<luabridge::LuaRef>` must be cleared before `lua_close`:
 
-**Advantages**:
-- Batch rendering (fewer state changes)
-- Automatic Z-order sorting
-- Separation of game logic and rendering
-- Easy to add post-processing effects
-
-**Phases**:
-
-1. **Queue Phase** (During Update):
-```lua
-function Component:OnUpdate()
-    Image.Draw("player.png", x, y)           -- Queued, not rendered
-    Text.Draw("Score: 100", 10, 10, ...)     -- Queued, not rendered
-end
+```
+Engine::~Engine()
+  EventSystem::Clear()     ← LuaRefs in subscriptions
+  Scheduler::Clear()       ← LuaRefs in Timer callbacks
+  Tween::Clear()           ← LuaRefs in tween targets
+  AnimationDB::Clear()
+  ParticleSystem::Clear()
+  scene.clearLuaRefs()     ← actors, caches, templates
+  ComponentDB::Shutdown()  ← componentTypeCache, then lua_close
+  AudioDB::Shutdown()
+  TextDB::Shutdown()
 ```
 
-2. **Sort Phase** (Before Rendering):
-```cpp
-std::stable_sort(image_draw_request_queue.begin(),
-                 image_draw_request_queue.end(),
-                 [](const auto& a, const auto& b) {
-                     return a.sorting_order < b.sorting_order;
-                 });
-```
+`ComponentDB::Shutdown()` itself clears `componentTypeCache` *before* calling `lua_close(L)`. The CI smoke test catches regressions here: it runs 60 frames and exits, so the whole teardown path must not crash.
 
-3. **Render Phase** (During Engine::Render()):
-```cpp
-for (auto& request : image_draw_request_queue) {
-    // Apply camera transform (if not UI)
-    // SDL_RenderCopyEx() with all transforms
-}
-image_draw_request_queue.clear();
-```
+## Rendering pipeline
 
-### Camera System
+Rendering is deferred. Lua draws during `OnUpdate`/`OnLateUpdate` by calling `Image.Draw*` / `Text.Draw`, which push entries into per-frame queues in `ImageDB` and `TextDB`. `Engine::Render()` then:
 
-**World-Space Rendering**:
-- Affected by camera position and zoom
-- Used for game world objects (sprites, tiles, etc.)
+- Sorts sprite queues by `sorting_order` (stable).
+- Applies camera transform (world-space) or identity (`DrawUI*`).
+- Uses one batched `SDL_RenderCopy*` per sprite, with texture color/alpha modulation for tinting.
+- Renders particles after images so they float on top of world geometry but below text.
 
-**Screen-Space Rendering** (UI):
-- Ignores camera transform
-- Used for HUD, menus, debug text
+Camera supports position, zoom, lerp-follow, bounds, and timed screen shake; see `Renderer::UpdateCamera`.
 
-**Camera Controls**:
-```lua
--- Set camera position
-Camera.SetPosition(player_x, player_y)
+## Physics
 
--- Set zoom level
-Camera.SetZoom(2.0)  -- 2x zoom
+`RigidbodyWorld` owns a single `b2World` stepped at 60 Hz with 8 velocity / 3 position iterations. Each `Rigidbody` wraps a `b2Body` and is attached to an Actor. Lua sees it as userdata with `GetPosition` / `SetVelocity` / `AddForce` / etc.
 
--- Get camera info
-local pos = Camera.GetPosition()
-local zoom = Camera.GetZoomFactor()
-```
+Collision and trigger contacts route through `CollisionListener`, which looks up the Lua actors by their Box2D user-data pointers and invokes callbacks with a `collision` table `{ other, point, normal, relative_velocity, is_trigger }`.
 
-## Physics System
+`CollisionLayers` lets Lua declare named layers and pairwise masks without touching Box2D categories directly. `PhysicsQuery` exposes `Physics.Raycast` and `Physics.RaycastAll`.
 
-### Box2D Integration
+Actors destroyed mid-step (including from collision callbacks) are queued into `actors_to_destroy` and actually removed in `ActorsPendingDestruction` after the step finishes — destroying a `b2Body` inside a contact callback is undefined behavior.
 
-**World Simulation**:
-```cpp
-// In Engine::Update()
-RigidbodyWorld::Step(fixed_timestep);  // e.g., 1/60 seconds
-```
+## Scripting
 
-**Collision Layers** (via Box2D fixtures):
-- All rigidbodies can collide by default
-- Custom filtering possible via Box2D category/mask bits (future enhancement)
+`ComponentDB::Init()` builds one Lua state with LuaBridge and registers every engine API in one pass. Component types under `resources.<game>/component_types/*.lua` are loaded on demand the first time a scene references them, then cached in `componentTypeCache` as the prototype. Instantiating a component = making a fresh Lua table and wiring its metatable `__index` to the prototype, so each instance has its own per-instance state while sharing behavior.
 
-**Contact Listener**:
-```cpp
-class CollisionListener : public b2ContactListener {
-    void BeginContact(b2Contact* contact) {
-        // Call Lua OnCollisionEnter() or OnTriggerEnter()
-    }
-    void EndContact(b2Contact* contact) {
-        // Call Lua OnCollisionExit() or OnTriggerExit()
-    }
-    void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) {
-        // Call Lua OnCollisionStay() or OnTriggerStay()
-    }
-};
-```
+Rigidbody is the one exception — it's a C++ class exposed as LuaBridge userdata. `CreateComponent("Rigidbody", ...)` deep-copies the prototype and hands the raw pointer to LuaBridge, which takes ownership via Lua's GC. This raw `new` is intentional.
 
-### Rigidbody Configuration
+## Error handling
 
-**Properties**:
-```lua
--- In actor template JSON or Lua:
-rigidbody = {
-    body_type = "dynamic",      -- "dynamic" | "kinematic" | "static"
-    collider_type = "box",      -- "box" | "circle"
-    width = 1.0,
-    height = 1.0,
-    friction = 0.3,
-    bounciness = 0.3,
-    density = 1.0,
-    gravity_scale = 1.0,
-    has_collider = true,
-    has_trigger = true          -- Separate trigger shape
-}
-```
+Fatal conditions raise from the `EngineException` hierarchy in `EngineException.hpp`:
 
-## Scripting System
+- `ConfigurationException` — bad `game.config` / `rendering.config`.
+- `ResourceNotFoundException` — missing scene / template / image / font / audio.
+- `ScriptException` — syntax or load error in a component file.
+- `RenderException` — SDL or SDL_image failure.
+- `AudioException` — SDL_mixer failure.
 
-### Lua Integration
+`main.cpp` catches these, logs with `LOG_FATAL`, and exits 1. Recoverable per-frame problems use `LOG_WARNING` / `LOG_ERROR` and are swallowed — a single misbehaving Lua component is disabled after three throws rather than taking down the game.
 
-**Lua State**:
-- One global Lua state shared by all components
-- Initialized in ComponentDB::Init()
-- Closed in ComponentDB destructor
+## Extending
 
-**API Binding** (via LuaBridge):
-```cpp
-luabridge::getGlobalNamespace(L)
-    .beginClass<Actor>("Actor")
-        .addFunction("GetName", &Actor::GetName)
-        .addFunction("GetComponent", &Actor::GetComponent)
-        .addFunction("AddComponent", &Actor::AddComponent)
-    .endClass()
-
-    .beginClass<Input>("Input")
-        .addStaticFunction("GetKey", &Input::GetKey)
-        .addStaticFunction("GetMousePosition", &Input::GetMousePosition)
-    .endClass();
-```
-
-**Component Inheritance**:
-```lua
--- Prototype pattern via Lua metatables
-local instance = {}
-setmetatable(instance, {__index = ComponentPrototype})
-```
-
-### Available Lua APIs
-
-**Actor**:
-- `actor:GetName()` → string
-- `actor:GetID()` → number
-- `actor:GetComponent(type)` → component or nil
-- `actor:GetComponents(type)` → table of components
-- `actor:AddComponent(type)` → component
-- `actor:RemoveComponent(component)` → void
-
-**Input**:
-- `Input.GetKey(key)` → boolean
-- `Input.GetKeyDown(key)` → boolean
-- `Input.GetKeyUp(key)` → boolean
-- `Input.GetMousePosition()` → {x, y}
-- `Input.GetMouseButton(button)` → boolean
-- `Input.GetMouseScrollDelta()` → number
-
-**Image**:
-- `Image.Draw(name, x, y)` → void
-- `Image.DrawEx(name, x, y, rotation, scale_x, scale_y, pivot_x, pivot_y, r, g, b, a, sorting_order)` → void
-- `Image.DrawUI(name, x, y)` → void
-- `Image.DrawPixel(x, y, r, g, b, a)` → void
-
-**Text**:
-- `Text.Draw(content, x, y, font_name, font_size, r, g, b, a)` → void
-
-**Audio**:
-- `Audio.PlayChannel(channel, clip_name, loop)` → void
-- `Audio.HaltChannel(channel)` → void
-- `Audio.SetVolume(channel, volume)` → void
-
-**Scene**:
-- `Scene.Load(scene_name)` → void
-- `Scene.GetCurrent()` → string
-- `Scene.DontDestroy(actor)` → void
-- `Scene.Find(name)` → actor or nil
-- `Scene.FindAll(name)` → table of actors
-- `Scene.Instantiate(template_name)` → actor
-- `Scene.Destroy(actor)` → void
-
-**Camera**:
-- `Camera.SetPosition(x, y)` → void
-- `Camera.GetPosition()` → {x, y}
-- `Camera.SetZoom(zoom)` → void
-- `Camera.GetZoom()` → number
-
-**Physics**:
-- `Physics.Raycast(origin, direction, distance)` → hit_result
-- `Physics.RaycastAll(origin, direction, distance)` → table of hit_results
-
-**Debug**:
-- `Debug.Log(message)` → void
-- `Debug.LogError(message)` → void
-
-**Application**:
-- `Application.Quit()` → void
-- `Application.Sleep(milliseconds)` → void
-- `Application.GetFrame()` → number
-- `Application.OpenURL(url)` → void
-
-## Design Patterns
-
-### Patterns Used
-
-1. **Static Singleton**:
-   - Used for: Input, ImageDB, TextDB, AudioDB, ComponentDB
-   - Rationale: Global access from Lua, single instance per system
-   - Example: `Input::GetKey()`, `ImageDB::QueueImageDraw()`
-
-2. **Component Pattern**:
-   - Used for: Actor system
-   - Rationale: Flexible composition, data-driven design
-   - Example: Actors composed of Lua components
-
-3. **Prototype Pattern**:
-   - Used for: Component instantiation
-   - Rationale: Clone component types, override properties
-   - Example: Lua metatable `__index` for inheritance
-
-4. **Deferred Rendering**:
-   - Used for: ImageDB, TextDB
-   - Rationale: Batch draw calls, enable sorting
-   - Example: Queue draw requests, render in batch
-
-5. **Observer Pattern**:
-   - Used for: Collision callbacks
-   - Rationale: Decouple physics from game logic
-   - Example: Box2D ContactListener → Lua callbacks
-
-6. **Command Pattern**:
-   - Used for: Deferred actor destruction
-   - Rationale: Avoid invalidating iterators during updates
-   - Example: Mark actors for destruction, destroy at end of frame
-
-### Memory Management
-
-**C++ Side**:
-- `std::unique_ptr` for actor ownership (SceneDB owns actors)
-- `std::shared_ptr` for Lua component references (shared with Lua GC)
-- RAII for SDL resources (destructors clean up)
-
-**Lua Side**:
-- Lua garbage collector manages component tables
-- Weak references where appropriate (future enhancement)
-
-**Resource Loading**:
-- Lazy loading: textures/fonts/audio loaded on first use
-- Caching: resources cached and reused
-- No explicit unloading (SDL resources freed on engine shutdown)
-
-## Performance Considerations
-
-### Optimization Strategies
-
-1. **Deferred Rendering**: Batch and sort draw calls
-2. **Texture Caching**: Load once, reuse
-3. **Component Caching**: Cache OnUpdate/OnLateUpdate components
-4. **Stable Sorting**: Preserve submission order for same z-order
-5. **Reserve Vectors**: Pre-allocate capacity (e.g., 1000 actors)
-6. **Lua Function Caching**: Cache function references, avoid string lookups
-
-### Performance Metrics
-
-**Typical Performance** (release build, 1080p):
-- 1000+ actors with components: 60 FPS
-- 10000+ draw calls per frame: 60 FPS
-- Box2D physics (100 bodies): 60 FPS
-
-**Profiling Hotspots**:
-- Lua function calls (use caching)
-- SDL_RenderCopyEx() (use batching)
-- Box2D Step() (reduce body count or timestep)
-- String allocations (use string_view or const char*)
-
-## Future Enhancements
-
-### Planned Features
-
-1. **Particle System**: GPU-accelerated particles
-2. **Tilemap Support**: Efficient rendering for grid-based games
-3. **Animation System**: Sprite sheet animation with keyframes
-4. **Collision Layers**: Customize collision filtering
-5. **Entity Query System**: Find actors by tag/layer
-6. **Profiler**: Built-in performance profiling
-7. **Level Editor**: Visual scene editor
-8. **Networking**: Client-server multiplayer
-
-### Architectural Improvements
-
-1. **ECS Migration**: Consider Entity-Component-System for better cache locality
-2. **Multi-threading**: Separate render and update threads
-3. **Lua Optimization**: LuaJIT for JIT compilation
-4. **Resource Manager**: Explicit load/unload with reference counting
-5. **Scene Streaming**: Load/unload scenes asynchronously
-
----
-
-**Last Updated**: 2025-10-28
-**Engine Version**: 1.0
-**Author**: Jack Gaffney
+- **Add a Lua API**: add the C++ function → bind it in `ComponentDB::Init()` → document in `API_REFERENCE.md` → exercise in `resources.demo/component_types/Showcase.lua` if cheap.
+- **Add a subsystem**: model it after `ParticleSystem` — static class with `Init`, `Update(dt)`, `Clear`. Wire `Init` into `Engine::Engine()` and `Clear` into `Engine::~Engine()` before `ComponentDB::Shutdown()`.
+- **Add a scene**: drop a `.scene` JSON under `resources.<game>/scenes/`. Reference it from code via `Scene.Load("name")` or `Scene.LoadWithTransition("name", "fade", 0.5)`.
+- **Add a component**: drop a `.lua` under `resources.<game>/component_types/`. Reference it by table name in an actor template or scene.

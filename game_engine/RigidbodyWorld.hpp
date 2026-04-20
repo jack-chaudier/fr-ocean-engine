@@ -5,8 +5,7 @@
 //  Created by Jack Gaffney on 4/14/25.
 //
 
-#ifndef RigidbodyWorld_hpp
-#define RigidbodyWorld_hpp
+#pragma once
 
 #include <memory>
 #include "box2d/box2d.h"
@@ -41,4 +40,3 @@ private:
     inline static int position_iterations = 3;
 };
 
-#endif /* RigidbodyWorld_hpp */

@@ -15,6 +15,11 @@
 #include <cstdlib>
 #include <algorithm>
 
+static inline int clamp_color(float v) {
+    if (v < 0.0f) return 0;
+    if (v > 255.0f) return 255;
+    return static_cast<int>(v);
+}
 
 bool compare_image_requests(const ImageDrawRequest& a, const ImageDrawRequest& b) {
     if (a.is_ui != b.is_ui) return !a.is_ui;
@@ -89,10 +94,10 @@ void ImageDB::QueueImageDrawEx(const std::string& imageName, float x, float y,
     request.scale_y = scaleY;
     request.pivot_x = pivotX;
     request.pivot_y = pivotY;
-    request.r = static_cast<int>(r);
-    request.g = static_cast<int>(g);
-    request.b = static_cast<int>(b);
-    request.a = static_cast<int>(a);
+    request.r = clamp_color(r);
+    request.g = clamp_color(g);
+    request.b = clamp_color(b);
+    request.a = clamp_color(a);
     request.sorting_order = static_cast<int>(sortingOrder);
     request.is_ui = false;
     request.order_index = request_counter++;
@@ -139,10 +144,10 @@ void ImageDB::QueueImageDrawUIEx(const std::string& imageName, float x, float y,
     
     request.pivot_x = 0.0f;
     request.pivot_y = 0.0f;
-    request.r = static_cast<int>(r);
-    request.g = static_cast<int>(g);
-    request.b = static_cast<int>(b);
-    request.a = static_cast<int>(a);
+    request.r = clamp_color(r);
+    request.g = clamp_color(g);
+    request.b = clamp_color(b);
+    request.a = clamp_color(a);
     request.sorting_order = static_cast<int>(sortingOrder);
     request.is_ui = true;
     request.order_index = request_counter++;
@@ -154,10 +159,10 @@ void ImageDB::QueueDrawPixel(float x, float y, float r, float g, float b, float 
     PixelDrawRequest request;
     request.x = static_cast<int>(x);
     request.y = static_cast<int>(y);
-    request.r = static_cast<int>(r);
-    request.g = static_cast<int>(g);
-    request.b = static_cast<int>(b);
-    request.a = static_cast<int>(a);
+    request.r = clamp_color(r);
+    request.g = clamp_color(g);
+    request.b = clamp_color(b);
+    request.a = clamp_color(a);
 
     pixel_draw_request_queue.push_back(request);
 }
@@ -168,10 +173,10 @@ void ImageDB::QueueDrawRect(float x, float y, float w, float h, float r, float g
     request.y = static_cast<int>(y);
     request.w = static_cast<int>(w);
     request.h = static_cast<int>(h);
-    request.r = static_cast<int>(r);
-    request.g = static_cast<int>(g);
-    request.b = static_cast<int>(b);
-    request.a = static_cast<int>(a);
+    request.r = clamp_color(r);
+    request.g = clamp_color(g);
+    request.b = clamp_color(b);
+    request.a = clamp_color(a);
 
     rect_draw_request_queue.push_back(request);
 }
@@ -215,7 +220,7 @@ void ImageDB::RenderAndClearAllImages() {
         else {
             SDL_RenderSetScale(Renderer::getSDLRenderer(), zoom_factor, zoom_factor);
 
-            glm::vec2 final_rendering_position = glm::vec2(request.x, request.y) - Renderer::GetCameraPosition();
+            glm::vec2 final_rendering_position = glm::vec2(request.x, request.y) - Renderer::GetEffectiveCameraPosition();
 
             tex_rect.x = final_rendering_position.x * pixels_per_meter +
                 cam_dimensions.x * 0.5f * (1.0f / zoom_factor) -

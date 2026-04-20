@@ -8,14 +8,23 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cstdlib>
 #include "AudioDB.hpp"
 #include "Logger.hpp"
 #include "EngineException.hpp"
 #include "ConfigManager.hpp"
 
 void AudioDB::Init() {
-    AudioHelper::Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-    AudioHelper::Mix_AllocateChannels(50);
+    if (AudioHelper::Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
+        std::string error = Mix_GetError();
+        LOG_FATAL("SDL_mixer initialization failed: " + error);
+        throw AudioException("SDL_mixer initialization failed: " + error);
+    }
+    if (AudioHelper::Mix_AllocateChannels(50) < 0) {
+        std::string error = Mix_GetError();
+        LOG_FATAL("SDL_mixer channel allocation failed: " + error);
+        throw AudioException("SDL_mixer channel allocation failed: " + error);
+    }
 }
 
 void AudioDB::PlayChannel(int channel, const std::string &audio_clip_name, bool does_loop) {
@@ -53,4 +62,32 @@ void AudioDB::HaltChannel(int channel) {
 void AudioDB::SetVolume(int channel, float volume) {
     int vol = static_cast<int>(std::clamp(volume, 0.0f, 1.0f) * 128);
     AudioHelper::Mix_Volume(channel, vol);
+}
+
+void AudioDB::Shutdown() {
+    if (!IsAutograderMode()) {
+        for (auto& pair : loaded_audio) {
+            if (pair.second) {
+                Mix_FreeChunk(pair.second);
+            }
+        }
+    }
+    loaded_audio.clear();
+    AudioHelper::Mix_CloseAudio();
+}
+
+bool AudioDB::IsAutograderMode() {
+#ifdef _WIN32
+    char* val = nullptr;
+    size_t length = 0;
+    _dupenv_s(&val, &length, "AUTOGRADER");
+    if (val) {
+        free(val);
+        return true;
+    }
+    return false;
+#else
+    const char* autograder_mode_env_variable = std::getenv("AUTOGRADER");
+    return autograder_mode_env_variable != nullptr;
+#endif
 }

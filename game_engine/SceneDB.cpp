@@ -6,7 +6,7 @@
 //
 
 #include "SceneDB.hpp"
-#include "EngineUtils.h"
+#include "EngineUtils.hpp"
 #include "rapidjson/document.h"
 #include "Actor.hpp"
 #include "RigidbodyWorld.hpp"
@@ -25,6 +25,28 @@ void SceneDB::ReportError(const std::string& actor_name, const luabridge::LuaExc
     std::string error_message = e.what();
     std::replace(error_message.begin(), error_message.end(), '\\', '/');
     LOG_ERROR(actor_name + " : " + error_message);
+}
+
+void SceneDB::CallOnDestroyForActor(Actor& actor) {
+    std::vector<std::string> keys(actor.component_keys.begin(), actor.component_keys.end());
+    std::sort(keys.begin(), keys.end());
+
+    for (const auto& key : keys) {
+        auto it = actor.components.find(key);
+        if (it == actor.components.end()) continue;
+
+        auto& comp = it->second;
+        if ((*comp).isUserdata() && (*comp).isInstance<Rigidbody>()) {
+            (*comp).cast<Rigidbody*>()->OnDestroy();
+        } else if ((*comp)["OnDestroy"].isFunction()) {
+            try {
+                (*comp)["OnDestroy"](*comp);
+            }
+            catch (luabridge::LuaException& e) {
+                ReportError(actor.GetName(), e);
+            }
+        }
+    }
 }
 
 void SceneDB::Load(const std::string& scene_name) {
@@ -58,47 +80,18 @@ void SceneDB::loadScene() {
     }
     
     std::vector<std::unique_ptr<Actor>> persistent_actors;
-        
-    // Process actors - call OnDestroy for non-persistent ones
+
+    // Tear down non-persistent actors; preserve dont_destroy ones.
     for (auto it = actors.begin(); it != actors.end();) {
         if (it->second->dont_destroy && !it->second->destroyed) {
             persistent_actors.push_back(std::move(it->second));
             it = actors.erase(it);
         } else {
-            // For non-persistent actors, call OnDestroy on components
-            auto& actor = it->second;
-            
-            // Sort component keys to ensure consistent order
-            std::vector<std::string> keys;
-            for (const auto& key : actor->component_keys) {
-                keys.push_back(key);
-            }
-            std::sort(keys.begin(), keys.end());
-            
-            // Call OnDestroy in sorted order
-            for (const auto& key : keys) {
-                auto comp_it = actor->components.find(key);
-                if (comp_it != actor->components.end()) {
-                    auto& comp = comp_it->second;
-                    if ((*comp)["OnDestroy"].isFunction()) {
-                        try {
-                            (*comp)["OnDestroy"](*comp);
-                        }
-                        catch (luabridge::LuaException& e) {
-                            ReportError(actor->GetName(), e);
-                        }
-                    } else if ((*comp).isUserdata() && (*comp).isInstance<Rigidbody>()) {
-                        // Special case for Rigidbody
-                        Rigidbody* rb = (*comp).cast<Rigidbody*>();
-                        rb->OnDestroy();
-                    }
-                }
-            }
-            
-            ++it; // Move to next actor
+            CallOnDestroyForActor(*it->second);
+            ++it;
         }
     }
-    
+
     actors.clear();
     actor_id_vec.clear();
     
@@ -245,80 +238,53 @@ void SceneDB::ProcessSceneOnStart() {
     }
 }
 
-void SceneDB::ProcessSceneUpdate() {
-    if (on_update_cache.empty()) return;
+void SceneDB::ProcessLifecycleCache(LifecycleCache& cache, const char* method_name) {
+    if (cache.empty()) return;
 
-    // Collect keys first to avoid issues if cache is modified during iteration
-    std::vector<ComponentKey> keys_to_process;
-    keys_to_process.reserve(on_update_cache.size());
-    for (const auto& [key, _] : on_update_cache) {
-        keys_to_process.push_back(key);
-    }
+    std::vector<ComponentKey> keys;
+    keys.reserve(cache.size());
+    for (const auto& [key, _] : cache) keys.push_back(key);
 
-    for (const auto& cacheKey : keys_to_process) {
-        auto cache_it = on_update_cache.find(cacheKey);
-        if (cache_it == on_update_cache.end()) continue;
+    const int current_frame = Helper::GetFrameNumber();
 
-        auto itt = actors.find(cacheKey.actorId);
-        if (itt == actors.end()) continue;
-        const auto& actor = itt->second;
+    for (const auto& cacheKey : keys) {
+        auto cache_it = cache.find(cacheKey);
+        if (cache_it == cache.end()) continue;
+
+        auto actor_it = actors.find(cacheKey.actorId);
+        if (actor_it == actors.end()) continue;
+        const auto& actor = actor_it->second;
         if (actor->destroyed) continue;
 
         luabridge::LuaRef comp = *(cache_it->second);
-
-        if (comp.isUserdata()) {
-            continue;
-        }
-
+        if (comp.isUserdata()) continue;
         if (!comp["enabled"]) continue;
-
-        if (comp["frame_added"] == Helper::GetFrameNumber() && comp["new_addition"]) continue;
+        if (comp["frame_added"] == current_frame && comp["new_addition"]) continue;
 
         try {
-            comp["OnUpdate"](comp);
+            comp[method_name](comp);
         }
         catch (luabridge::LuaException& e) {
             ReportError(actor->GetName(), e);
+            int err_count = comp["runtime_error_count"].isNumber()
+                ? comp["runtime_error_count"].cast<int>() : 0;
+            err_count++;
+            comp["runtime_error_count"] = err_count;
+            if (err_count >= 3) {
+                comp["enabled"] = false;
+                LOG_WARNING("Component disabled after " + std::to_string(err_count)
+                    + " errors on actor: " + actor->GetName());
+            }
         }
     }
 }
 
+void SceneDB::ProcessSceneUpdate() {
+    ProcessLifecycleCache(on_update_cache, "OnUpdate");
+}
+
 void SceneDB::ProcessSceneLateUpdate() {
-    if (on_late_update_cache.empty()) return;
-
-    // Collect keys first to avoid issues if cache is modified during iteration
-    std::vector<ComponentKey> keys_to_process;
-    keys_to_process.reserve(on_late_update_cache.size());
-    for (const auto& [key, _] : on_late_update_cache) {
-        keys_to_process.push_back(key);
-    }
-
-    for (const auto& cacheKey : keys_to_process) {
-        auto cache_it = on_late_update_cache.find(cacheKey);
-        if (cache_it == on_late_update_cache.end()) continue;
-
-        auto itt = actors.find(cacheKey.actorId);
-        if (itt == actors.end()) continue;
-        const auto& actor = itt->second;
-        if (actor->destroyed) continue;
-
-        luabridge::LuaRef comp = *(cache_it->second);
-
-        if (comp.isUserdata()) {
-            continue;
-        }
-
-        if (!comp["enabled"]) continue;
-
-        if (comp["frame_added"] == Helper::GetFrameNumber() && comp["new_addition"]) continue;
-
-        try {
-            comp["OnLateUpdate"](comp);
-        }
-        catch (luabridge::LuaException& e) {
-            ReportError(actor->GetName(), e);
-        }
-    }
+    ProcessLifecycleCache(on_late_update_cache, "OnLateUpdate");
 }
 
 
@@ -459,40 +425,21 @@ void SceneDB::ActorsPendingDestruction() {
         actors_to_destroy.end()
     );
 
-    // Call OnDestroy on all components before erasing actors
+    // Call OnDestroy on all components, then disable + uncache.
     for (uint64_t id : actors_to_destroy) {
         auto actor_it = actors.find(id);
         if (actor_it == actors.end()) continue;
-
         auto& actor = actor_it->second;
 
-        std::vector<std::string> keys;
+        CallOnDestroyForActor(*actor);
+
         for (const auto& key : actor->component_keys) {
-            keys.push_back(key);
-        }
-        std::sort(keys.begin(), keys.end());
-
-        for (const auto& key : keys) {
-            auto comp_it = actor->components.find(key);
-            if (comp_it == actor->components.end()) continue;
-
-            auto& comp = comp_it->second;
-            if ((*comp).isUserdata() && (*comp).isInstance<Rigidbody>()) {
-                Rigidbody* rb = (*comp).cast<Rigidbody*>();
-                rb->OnDestroy();
-            } else if ((*comp)["OnDestroy"].isFunction()) {
-                try {
-                    (*comp)["OnDestroy"](*comp);
-                }
-                catch (luabridge::LuaException& e) {
-                    ReportError(actor->GetName(), e);
-                }
+            auto it = actor->components.find(key);
+            if (it == actor->components.end()) continue;
+            if (!(*it->second).isUserdata()) {
+                (*it->second)["enabled"] = false;
             }
-
-            if (!(*comp).isUserdata()) {
-                (*comp)["enabled"] = false;
-            }
-            removeComponentFromCaches(actor->GetID(), key);
+            removeComponentFromCaches(id, key);
         }
     }
 
@@ -559,8 +506,13 @@ luabridge::LuaRef SceneDB::FindAllActor(const std::string & name) {
 }
 
 void SceneDB::clearLuaRefs() {
+    on_start_cache.clear();
+    on_update_cache.clear();
+    on_late_update_cache.clear();
+    rigidbodies_to_init.clear();
+    actors_to_destroy.clear();
+    actors_to_add.clear();
     actors.clear();
     actor_id_vec.clear();
-    ComponentDB::CDB.clear();
     templateCache.clear();
 }

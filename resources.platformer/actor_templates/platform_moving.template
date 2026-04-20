@@ -4,7 +4,8 @@
         "MovingPlatform": {
             "type": "MovingPlatform",
             "move_speed": 2.0,
-            "move_distance": 3.0
+            "move_distance": 3.0,
+            "platform_width": 2.0
         },
         "Rigidbody": {
             "type": "Rigidbody",

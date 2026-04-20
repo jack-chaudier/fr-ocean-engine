@@ -8,13 +8,12 @@
 //  Created by Jack Gaffney on 1/22/25.
 //
 
-#ifndef Engine_hpp
-#define Engine_hpp
+#pragma once
 
 #include <string>
 #include <optional>
 #include "Renderer.hpp"
-#include "EngineUtils.h"
+#include "EngineUtils.hpp"
 #include "SceneDB.hpp"
 #include "Actor.hpp"
 #include "rapidjson/document.h"
@@ -22,7 +21,7 @@
 #include "ConfigManager.hpp"
 #include "lua/lua.hpp"
 #include "LuaBridge/LuaBridge.h"
-#include "ApplicationAPI.h"
+#include "ApplicationAPI.hpp"
 
 /**
  * @class Engine
@@ -86,21 +85,9 @@ private:
     inline static glm::ivec3 cleanColor;
 
 public:
-    /**
-     * @brief Main game loop that runs until application quit is requested.
-     *
-     * Loop structure (every frame):
-     * 1. Input::BeginFrame() - Reset input states
-     * 2. SDL_PollEvent() loop - Process OS events (keyboard, mouse, window)
-     * 3. Update() - Execute game logic and component updates
-     * 4. Render() - Draw all queued images, text, and UI elements
-     * 5. Helper::SDL_RenderPresent_EX() - Swap buffers and present frame
-     *
-     * @note The loop uses SDL event polling for platform-agnostic event handling
-     * @see Update() for game logic processing
-     * @see Render() for rendering pipeline details
-     */
-    static void GameLoop();
+    /// Main game loop. Runs forever until SDL_QUIT or a non-negative
+    /// `max_frames` frame budget is reached (used by `--self-check`).
+    static void GameLoop(int max_frames = -1);
 
     /**
      * @brief Processes game logic updates for the current frame.
@@ -134,4 +121,3 @@ public:
 
 };
 
-#endif /* Engine_hpp */

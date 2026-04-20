@@ -1,0 +1,15 @@
+{
+    "name": "Spike",
+    "components": {
+        "Spike": { "type": "Spike" },
+        "Rigidbody": {
+            "type": "Rigidbody",
+            "body_type": "kinematic",
+            "has_collider": false,
+            "has_trigger": true,
+            "trigger_type": "box",
+            "trigger_width": 1.0,
+            "trigger_height": 0.4
+        }
+    }
+}

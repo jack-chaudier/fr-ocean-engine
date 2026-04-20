@@ -5,8 +5,7 @@
 //  Provides frame-independent timing for game logic.
 //
 
-#ifndef Time_hpp
-#define Time_hpp
+#pragma once
 
 #include <chrono>
 
@@ -89,4 +88,3 @@ private:
     inline static bool initialized = false;
 };
 
-#endif /* Time_hpp */

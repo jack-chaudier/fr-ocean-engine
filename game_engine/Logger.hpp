@@ -7,8 +7,7 @@
 //  source location tracking via macros.
 //
 
-#ifndef Logger_hpp
-#define Logger_hpp
+#pragma once
 
 #include <string>
 #include <fstream>
@@ -121,4 +120,3 @@ private:
 #define LOG_ERROR(msg)   Logger::Log(LogLevel::ERROR, msg, __FILE__, __LINE__)
 #define LOG_FATAL(msg)   Logger::Log(LogLevel::FATAL, msg, __FILE__, __LINE__)
 
-#endif /* Logger_hpp */

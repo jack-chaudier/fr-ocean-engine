@@ -12,13 +12,15 @@
 
 luabridge::LuaRef Actor::GetComponentByKey(const std::string & key) {
     auto it = components.find(key);
-    
+    if (it == components.end())
+        return luabridge::LuaRef(ComponentDB::GetLuaState());
+
     const auto& compRef = *(it->second);
-    
+
     if (compRef.isUserdata()) return compRef;
-    
-    if (it != components.end() && (*it->second)["enabled"])
-        return *(components[key]);
+
+    if (compRef["enabled"])
+        return compRef;
     else
         return luabridge::LuaRef(ComponentDB::GetLuaState());
 }
@@ -67,7 +69,6 @@ luabridge::LuaRef Actor::AddComponent(const std::string& type) {
     components[comp_key] = component_ref;
     component_keys.insert(comp_key);
     InjectReference(component_ref);
-    ComponentDB::CDB[comp_key] = component_ref;
 
     // Special handling for different component types
     if (type == "Rigidbody") {

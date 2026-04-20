@@ -1,105 +1,119 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working in this repo.
 
-## Build Commands
-
-```bash
-# Build (from project root)
-mkdir build && cd build
-cmake ..
-cmake --build . --config Release
-
-# macOS with Xcode
-cmake -G Xcode ..
-
-# Windows with Visual Studio
-cmake -G "Visual Studio 17 2022" ..
-cmake --build . --config Release
-```
-
-The executable outputs to `build/bin/game_engine` with resources copied to `build/bin/resources/`.
-
-## Command-Line Options
+## Build
 
 ```bash
-./game_engine --resources path/to/resources/  # Override resources directory
-./game_engine --debug                          # Enable debug logging
-./game_engine --version                        # Print version
-./game_engine --help                           # Print help
+cmake --preset release
+cmake --build --preset release
+./build/bin/game_engine --resources resources.platformer/
 ```
 
-## Architecture Overview
+Or use the helper:
 
-FR-Ocean Engine is a component-based 2D game engine with C++17 core systems and Lua scripting for game logic.
-
-### Core Systems (Static Singletons)
-
-- **Engine** (`Engine.cpp`) - Main game loop orchestrator
-- **SceneDB** (`SceneDB.cpp`) - Actor lifecycle and scene management
-- **ComponentDB** (`ComponentDB.cpp`) - Lua state, component type loading, C++ API bindings via LuaBridge
-- **ImageDB** (`ImageDB.cpp`) - Deferred sprite rendering with z-order sorting
-- **TextDB** (`TextDB.cpp`) - TrueType font rendering
-- **AudioDB** (`AudioDB.cpp`) - SDL2_mixer audio playback
-- **Input** (`Input.cpp`) - Keyboard/mouse state management
-- **RigidbodyWorld** (`RigidbodyWorld.cpp`) - Box2D physics world simulation
-- **Logger** (`Logger.cpp`) - Thread-safe logging with multiple severity levels
-- **ConfigManager** (`ConfigManager.cpp`) - Game and rendering configuration
-
-### Error Handling
-
-The engine uses an exception hierarchy defined in `EngineException.hpp`:
-- `EngineException` - Base exception class
-- `ConfigurationException` - Config file errors
-- `ResourceNotFoundException` - Missing assets (images, fonts, audio, scenes)
-- `ScriptException` - Lua script errors
-- `RenderException` - SDL/rendering errors
-- `AudioException` - Audio system errors
-
-Use `LOG_INFO`, `LOG_WARNING`, `LOG_ERROR`, `LOG_FATAL` macros for logging.
-
-### Frame Update Flow
-
-```
-Input::BeginFrame() -> SDL Event Loop -> SceneDB::UpdateScene() -> Physics Step -> Engine::Render()
+```bash
+python3 scripts/run_game.py platformer   # hero sample
+python3 scripts/run_game.py demo         # minimal feature showcase
 ```
 
-SceneDB update phases: `ProcessOnStart()` -> `ProcessUpdate()` -> physics -> `ProcessLateUpdate()` -> destroy pending actors
+## Command-line flags
 
-### Component System
+```
+--resources <path>    Override resources dir (default: resources/)
+--debug               Enable DEBUG-level logs
+--self-check [N]      Boot engine, run N frames (default 60), exit 0. Used by CI.
+--version             Print version and exit
+--help                Print usage
+```
 
-Lua components in `resources/component_types/` define game behavior. ComponentDB loads these as prototypes and instantiates via metatable inheritance. Components have lifecycle methods: `OnStart`, `OnUpdate`, `OnLateUpdate`, `OnDestroy`, plus collision callbacks.
+## Tests
 
-### Rendering Pipeline
+CTest has two smoke targets that boot each sample headless and fail on any `[FATAL]` or `[ERROR]` line in the log.
 
-Deferred rendering: components queue draw requests during update, ImageDB sorts by `sorting_order` and renders in batch. World-space draws respect camera transform; UI draws (`DrawUI`) ignore camera.
+```bash
+cd build && ctest --output-on-failure
+```
 
-### Data Files
+Always run CTest after engine changes. If you add a new Lua API, write a short Lua component in `resources.demo/` that exercises it so the smoke test covers it.
 
-- `resources/game.config` - Game configuration (initial scene, window title)
-- `resources/rendering.config` - Window size, clear color
-- `resources/scenes/*.scene` - JSON scene definitions
-- `resources/actor_templates/*.template` - Actor component configurations
-- `resources/component_types/*.lua` - Lua component scripts
+## Architecture
 
-## Code Standards
+Core systems live in `game_engine/` as static-class "DBs" plus an `Engine` orchestrator.
 
-- **C++17** with modern features (smart pointers, optional, structured bindings)
-- **PascalCase** for classes, public methods, Lua component tables
-- **snake_case** for variables, private helpers
-- **4 spaces** indentation, K&R braces
-- Attach `*` and `&` to type: `SDL_Texture* texture`
-- Use `std::unique_ptr`/`std::shared_ptr` over raw `new`/`delete`
-- Use exception hierarchy for fatal errors, log errors for recoverable issues
+- **Engine** (`Engine.cpp`) — owns the game loop.
+- **SceneDB** — actor lifecycle, scene load, `ProcessLifecycleCache` helper that runs `OnUpdate` / `OnLateUpdate` from a keyed cache.
+- **ComponentDB** — single Lua state, hosts every LuaBridge binding in `Init()`, and is responsible for clean shutdown order (caches before `lua_close`).
+- **ImageDB** / **TextDB** / **AudioDB** — deferred-queue rendering / SDL2_ttf / SDL2_mixer.
+- **RigidbodyWorld** — Box2D world step. `Rigidbody` is the per-actor wrapper.
+- **ParticleSystem** / **Tween** / **Scheduler** (`Timer`) / **EventSystem** / **AnimationDB** — all expose a `Clear()` that `Engine::~Engine()` calls before `ComponentDB::Shutdown()`.
+- **Renderer** / **Input** / **Logger** / **ConfigManager** / **SceneTransition** / **DebugDraw** / **CollisionLayers** / **PhysicsQuery** — straightforward.
 
-## Dependencies (Vendored)
+### Frame flow
 
-All dependencies in `vendor/`: SDL2, SDL2_image, SDL2_mixer, SDL2_ttf, Box2D, Lua 5.4, LuaBridge, GLM, RapidJSON
+```
+Input::BeginFrame → SDL events → Time::Update →
+  load pending scene (if any) → Scheduler/Tween/Animation/Particles/SceneTransition/Camera update →
+  SceneDB::UpdateScene (OnStart → OnUpdate → RB init → physics → OnLateUpdate → destroy queued)
+  → Render (clear → images → particles → text → pixels → debug → transition → present)
+```
 
-## Example Game
+### Error handling
 
-See `resources.example/` for a complete Space Shooter game demonstrating:
-- Player controller with movement and shooting
-- Enemy spawning and AI
-- Collision detection with triggers
-- Score tracking and game state management
+`EngineException` hierarchy in `EngineException.hpp` (Configuration / ResourceNotFound / Script / Render / Audio). Use `LOG_INFO / WARNING / ERROR / FATAL` for anything recoverable.
+
+**Shutdown order matters.** Anything that caches `std::shared_ptr<luabridge::LuaRef>` (SceneDB caches, ComponentDB `componentTypeCache`, EventSystem, Scheduler, Tween, AnimationDB, ParticleSystem) must be cleared *before* `lua_close(L)`. `Engine::~Engine()` already does this; respect the order if you add new LuaRef-holding subsystems.
+
+## Code standards
+
+- C++17, `#pragma once`, 4-space indent, K&R braces.
+- PascalCase classes / public methods; snake_case variables / private helpers.
+- `std::unique_ptr` / `std::shared_ptr` over raw `new`/`delete` — *except* where LuaBridge takes ownership of a raw pointer (see `ComponentDB::CreateComponent` for `Rigidbody`).
+- Keep engine headers `.hpp`. Vendor `.h` (Helper.h) is fine.
+- One subsystem per file pair.
+
+## Data file layout
+
+```
+resources.<game>/
+  game.config          JSON: game_title, initial_scene
+  rendering.config     JSON: resolution, clear color
+  scenes/*.scene       JSON: actor list with components
+  actor_templates/*.template  JSON: default component mix
+  component_types/*.lua       Lua: component definitions
+  images/ audio/ fonts/       assets
+  create_assets.py     Python (Pillow) regen script
+```
+
+Hero game: `resources.platformer/`. Feature demo: `resources.demo/`.
+
+The symlink `resources/` → `resources.platformer/` is used by the CMake bundled build.
+
+## Dependencies (vendored in `vendor/`)
+
+SDL2, SDL2_image, SDL2_mixer, SDL2_ttf, Box2D, Lua 5.4, LuaBridge, GLM, RapidJSON.
+
+## When to update docs
+
+| Change | Update |
+|---|---|
+| New Lua binding | `ComponentDB::Init()` + `API_REFERENCE.md` |
+| New subsystem | `ARCHITECTURE.md` + README architecture SVG |
+| User-visible behavior change | `README.md` + `CHANGELOG.md` |
+| New sample game | `scripts/run_game.py` `GAMES` map + CMake test target |
+
+## Adding a new Lua binding — checklist
+
+1. Add the C++ function.
+2. Bind it in `ComponentDB::Init()` under the right namespace.
+3. Document in `API_REFERENCE.md`.
+4. Exercise it in `resources.demo/component_types/Showcase.lua` if cheap.
+5. `cmake --build --preset release && cd build && ctest`.
+
+## Common pitfalls
+
+- Do not close the Lua state without clearing every LuaRef cache first.
+- When an actor is destroyed mid-physics-step, the deferral in `ActorsPendingDestruction` is what keeps Box2D alive. Don't remove it.
+- New LuaRef-holding subsystem? Add a `Clear()` and call it from `Engine::~Engine()` above `ComponentDB::Shutdown()`.
+- The `componentTypeCache` is keyed by component *type* string; two scenes referencing the same type share the prototype.
+- `MovingPlatform` / `Coin` use `kinematic` rigidbodies so the physics engine does not integrate gravity but still fires triggers — keep that in mind when scripting collision-heavy actors.

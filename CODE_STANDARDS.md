@@ -381,8 +381,9 @@ if (!file.is_open()) {
 
 ### Exceptions
 
-- Exceptions are currently **disabled** in the engine
-- Use return codes or `std::optional` for error cases
+- Exceptions are used for **fatal initialization/resource errors**
+- Do not use exceptions for control flow
+- Prefer return codes or `std::optional` for recoverable runtime cases
 - Document error conditions in function comments
 
 ```cpp

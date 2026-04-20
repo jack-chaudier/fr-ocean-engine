@@ -1,0 +1,17 @@
+{
+    "name": "Ball",
+    "components": {
+        "Ball": { "type": "Ball" },
+        "Rigidbody": {
+            "type": "Rigidbody",
+            "body_type": "dynamic",
+            "gravity_scale": 1.0,
+            "has_collider": true,
+            "collider_type": "circle",
+            "radius": 0.25,
+            "has_trigger": false,
+            "bounciness": 0.9,
+            "friction": 0.1
+        }
+    }
+}

@@ -8,8 +8,7 @@
 //  Created by Jack Gaffney on 2/11/25.
 //
 
-#ifndef AudioDB_hpp
-#define AudioDB_hpp
+#pragma once
 
 #include <string>
 #include <vector>
@@ -39,10 +38,10 @@
  *
  * Usage (from Lua):
  * ```lua
- * Audio.PlayChannel(0, "explosion.wav", false)      -- Play once on channel 0
- * Audio.PlayChannel(1, "background_music.ogg", true) -- Loop on channel 1
+ * Audio.Play(0, "explosion", false)      -- Play once on channel 0
+ * Audio.Play(1, "background_music", true) -- Loop on channel 1
  * Audio.SetVolume(0, 0.5)                            -- Set channel 0 to 50% volume
- * Audio.HaltChannel(1)                               -- Stop channel 1
+ * Audio.Halt(1)                               -- Stop channel 1
  * ```
  *
  * @note AudioDB uses static methods for global access from Lua scripts
@@ -52,21 +51,27 @@ public:
     /**
      * @brief Initializes SDL_mixer audio system.
      *
-     * @throws std::runtime_error if SDL_mixer initialization fails
+     * @throws AudioException if SDL_mixer initialization fails
      *
      * @note Called automatically by Engine constructor
      */
     static void Init();
 
     /**
+     * @brief Shuts down SDL_mixer and releases cached audio.
+     */
+    static void Shutdown();
+
+    /**
      * @brief Plays an audio clip on a specific channel.
      *
      * @param channel Channel number (0-15, or -1 for auto-select first available)
-     * @param audio_clip_name Audio filename (e.g., "explosion.wav", without path)
+     * @param audio_clip_name Audio filename without extension (e.g., "explosion")
      * @param does_loop If true, audio loops infinitely; if false, plays once
      *
      * @note Audio files are loaded from resources/audio/ and cached for reuse
-     * @note If the audio file doesn't exist, this method fails silently (no crash)
+     * @throws ResourceNotFoundException if the audio clip is missing
+     * @throws AudioException if the audio clip fails to load
      */
     static void PlayChannel(int channel, const std::string & audio_clip_name, bool does_loop);
 
@@ -93,6 +98,7 @@ private:
     /// Audio cache: filename -> Mix_Chunk* (loaded sound data)
     static inline std::unordered_map<std::string, Mix_Chunk*> loaded_audio;
 
+    static bool IsAutograderMode();
+
 };
 
-#endif /* AudioDB_hpp */

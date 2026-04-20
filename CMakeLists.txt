@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(game_engine VERSION 1.0 LANGUAGES C CXX)
+project(game_engine VERSION 1.1.0 LANGUAGES C CXX)
 
 #—— C++ setup ——
 set(CMAKE_CXX_STANDARD        17)
@@ -32,7 +32,7 @@ add_compile_options(
 )
 
 #—— Engine executable ——
-file(GLOB_RECURSE ENGINE_SOURCES
+file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
   ${CMAKE_SOURCE_DIR}/game_engine/*.cpp
 )
 add_executable(${PROJECT_NAME} ${ENGINE_SOURCES})
@@ -72,14 +72,12 @@ if(UNIX AND NOT APPLE)
   pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
   pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
   pkg_check_modules(SDL2_TTF   REQUIRED SDL2_ttf)
-  find_package(Lua 5.4 REQUIRED)
 
   target_include_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_IMAGE_INCLUDE_DIRS}
     ${SDL2_MIXER_INCLUDE_DIRS}
     ${SDL2_TTF_INCLUDE_DIRS}
-    ${LUA_INCLUDE_DIR}
   )
   target_link_directories(${PROJECT_NAME} PRIVATE
     ${SDL2_LIBRARY_DIRS}
@@ -95,7 +93,6 @@ if(UNIX AND NOT APPLE)
     ${SDL2_IMAGE_LIBRARIES}
     ${SDL2_MIXER_LIBRARIES}
     ${SDL2_TTF_LIBRARIES}
-    ${LUA_LIBRARIES}
   )
 
 elseif(APPLE)
@@ -245,8 +242,8 @@ endif()
 include(InstallRequiredSystemLibraries)
 
 set(CPACK_PACKAGE_NAME        "${PROJECT_NAME}")
-set(CPACK_PACKAGE_VENDOR      "Lots of places")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A simple 2D C++ game engine")
+set(CPACK_PACKAGE_VENDOR      "FR-Ocean")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A minimal 2D C++/Lua game engine built on SDL2 and Box2D")
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
@@ -254,3 +251,23 @@ set(CPACK_GENERATOR           "TGZ;ZIP")
 set(CPACK_PACKAGING_INSTALL_PREFIX "\${CMAKE_INSTALL_PREFIX}")
 
 include(CPack)
+
+#—— Testing ——
+enable_testing()
+
+# Smoke test: boot engine, load initial scene, run 60 frames, clean shutdown.
+# Catches regressions in scene loading, component lifecycle, and Lua teardown.
+add_test(
+  NAME smoke_platformer
+  COMMAND ${PROJECT_NAME} --resources ${CMAKE_SOURCE_DIR}/resources.platformer/ --self-check 60
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+add_test(
+  NAME smoke_demo
+  COMMAND ${PROJECT_NAME} --resources ${CMAKE_SOURCE_DIR}/resources.demo/ --self-check 60
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+set_tests_properties(smoke_platformer smoke_demo PROPERTIES
+  TIMEOUT 30
+  FAIL_REGULAR_EXPRESSION "\\[FATAL\\]|\\[ERROR\\]"
+)

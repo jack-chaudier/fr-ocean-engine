@@ -1,0 +1,6 @@
+{
+    "name": "Showcase",
+    "components": {
+        "Showcase": { "type": "Showcase" }
+    }
+}

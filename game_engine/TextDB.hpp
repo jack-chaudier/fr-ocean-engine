@@ -8,8 +8,7 @@
 //  Created by Jack Gaffney on 2/9/25.
 //
 
-#ifndef TextDB_hpp
-#define TextDB_hpp
+#pragma once
 
 #include <string>
 #include <vector>
@@ -147,4 +146,3 @@ private:
     inline static bool initialized = false;
 };
 
-#endif /* TextDB_hpp */

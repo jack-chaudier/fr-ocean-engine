@@ -101,6 +101,12 @@ TTF_Font* TextDB::GetFont(const std::string& fontName, int fontSize) {
 }
 
 
+static inline Uint8 clamp_color_u8(float v) {
+    if (v < 0.0f) return 0;
+    if (v > 255.0f) return 255;
+    return static_cast<Uint8>(v);
+}
+
 void TextDB::QueueTextDraw(const std::string& content, float x, float y,
                           const std::string& fontName, float fontSize,
                           float r, float g, float b, float a) {
@@ -110,8 +116,8 @@ void TextDB::QueueTextDraw(const std::string& content, float x, float y,
     request.y = static_cast<int>(y);
     request.fontName = fontName;
     request.fontSize = static_cast<int>(fontSize);
-    request.color = {static_cast<Uint8>(r), static_cast<Uint8>(g),
-                     static_cast<Uint8>(b), static_cast<Uint8>(a)};
+    request.color = {clamp_color_u8(r), clamp_color_u8(g),
+                     clamp_color_u8(b), clamp_color_u8(a)};
     
     drawRequests.push(request);
 }

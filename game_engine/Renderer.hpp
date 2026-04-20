@@ -8,12 +8,13 @@
 //  Created by Jack Gaffney on 2/7/25.
 //
 
-#ifndef Renderer_hpp
-#define Renderer_hpp
+#pragma once
 
 #include "SDL2/SDL.h"
 #include "glm/glm.hpp"
 #include <string>
+
+class Actor;
 
 /**
  * @class Renderer
@@ -158,6 +159,29 @@ public:
     /// Camera viewport dimensions in pixels (typically matches window resolution)
     inline static glm::ivec2 camera_dimensions;
 
+    // Camera follow
+    inline static Actor* follow_target = nullptr;
+    inline static float follow_lerp_speed = 5.0f;
+
+    // Screen shake
+    inline static float shake_intensity = 0.0f;
+    inline static float shake_duration = 0.0f;
+    inline static float shake_elapsed = 0.0f;
+    inline static glm::vec2 shake_offset = {0.0f, 0.0f};
+
+    // Camera bounds
+    inline static bool has_bounds = false;
+    inline static glm::vec2 bounds_min = {0.0f, 0.0f};
+    inline static glm::vec2 bounds_max = {0.0f, 0.0f};
+
+    static void Follow(Actor* target, float lerp_speed);
+    static void StopFollow();
+    static void Shake(float intensity, float duration);
+    static void SetBounds(float min_x, float min_y, float max_x, float max_y);
+    static void ClearBounds();
+    static void UpdateCamera(float dt);
+    static glm::vec2 GetEffectiveCameraPosition();
+
 private:
     std::string title;          ///< Window title
     glm::ivec3 clearColor;      ///< Background clear color (RGB 0-255)
@@ -170,4 +194,3 @@ private:
     inline static SDL_Renderer *renderer = nullptr;
 };
 
-#endif /* Renderer_hpp */

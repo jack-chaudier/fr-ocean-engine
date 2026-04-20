@@ -5,8 +5,7 @@
 //  Created by Jack Gaffney on 1/29/25.
 //
 
-#ifndef SceneDB_hpp
-#define SceneDB_hpp
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -17,7 +16,7 @@
 #include <set>
 #include <filesystem>
 #include <algorithm>
-#include "EngineUtils.h"
+#include "EngineUtils.hpp"
 #include "rapidjson/document.h"
 #include "Actor.hpp"
 #include "ConfigManager.hpp"
@@ -97,19 +96,24 @@ public:
     static void addComponentToCaches(uint64_t actorId, const std::string& key, std::shared_ptr<luabridge::LuaRef> compRef);
     static void removeComponentFromCaches(uint64_t actorId, const std::string& key);
     static void rebuildComponentCaches();
-private:
-    inline static std::string scene_path = "resources/scenes/";
 
-    inline static uint64_t id_ctr = 0;
-    
 private:
-    
+    inline static uint64_t id_ctr = 0;
+
+    using LifecycleCache = std::map<ComponentKey, std::shared_ptr<luabridge::LuaRef>>;
+
     void ProcessSceneOnStart();
     void ProcessSceneUpdate();
     void ProcessSceneLateUpdate();
     void RemoveActorComponents();
-    
     void ActorsPendingDestruction();
-};
 
-#endif /* SceneDB_hpp */
+    /// Runs a lifecycle method (OnUpdate/OnLateUpdate) across a cache,
+    /// skipping disabled/destroyed components and disabling any that
+    /// throw 3+ times.
+    static void ProcessLifecycleCache(LifecycleCache& cache, const char* method_name);
+
+    /// Calls OnDestroy on every component of an actor (Rigidbody handled
+    /// specially), in sorted key order.
+    static void CallOnDestroyForActor(Actor& actor);
+};

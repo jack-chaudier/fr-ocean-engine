@@ -1,0 +1,18 @@
+{
+    "name": "Flag",
+    "components": {
+        "Flag": {
+            "type": "Flag",
+            "next_scene": "level2"
+        },
+        "Rigidbody": {
+            "type": "Rigidbody",
+            "body_type": "kinematic",
+            "has_collider": false,
+            "has_trigger": true,
+            "trigger_type": "box",
+            "trigger_width": 0.5,
+            "trigger_height": 0.8
+        }
+    }
+}

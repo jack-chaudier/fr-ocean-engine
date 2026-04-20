@@ -401,29 +401,29 @@ end
 
 The Audio API handles sound effects and music playback.
 
-### Audio.PlayChannel(channel, clip_name, loop)
+### Audio.Play(channel, clip_name, loop)
 
 Plays an audio clip on a specific channel.
 
 **Parameters**:
 - `channel` (number): Channel number (0-15, or -1 for auto-select)
-- `clip_name` (string): Audio filename (e.g., "explosion.wav", without path)
+- `clip_name` (string): Audio filename without extension (e.g., "explosion")
 - `loop` (boolean): `true` to loop infinitely, `false` to play once
 
 **Example**:
 ```lua
 -- Play sound effect once
-Audio.PlayChannel(0, "explosion.wav", false)
+Audio.Play(0, "explosion", false)
 
 -- Loop background music
-Audio.PlayChannel(1, "background_music.ogg", true)
+Audio.Play(1, "background_music", true)
 ```
 
 **Note**: Audio files are loaded from `resources/audio/` and cached.
 
 ---
 
-### Audio.HaltChannel(channel)
+### Audio.Halt(channel)
 
 Stops playback on a channel.
 
@@ -432,7 +432,7 @@ Stops playback on a channel.
 
 **Example**:
 ```lua
-Audio.HaltChannel(1)  -- Stop channel 1
+Audio.Halt(1)  -- Stop channel 1
 ```
 
 ---
@@ -577,8 +577,11 @@ Destroys an actor (deferred until end of frame).
 
 **Example**:
 ```lua
-function Component:OnTriggerEnter(other)
-    Scene.Destroy(other)  -- Destroy the other actor
+function Component:OnTriggerEnter(collision)
+    local other = collision.other
+    if other ~= nil then
+        Scene.Destroy(other)  -- Destroy the other actor
+    end
 end
 ```
 
@@ -969,35 +972,49 @@ If the actor has a Rigidbody component, these callbacks are available:
 
 ```lua
 -- Called when a collision starts
-function Component:OnCollisionEnter(other_actor)
-    Debug.Log("Collision with: " .. other_actor:GetName())
+function Component:OnCollisionEnter(collision)
+    local other = collision.other
+    Debug.Log("Collision with: " .. other:GetName())
 end
 
 -- Called every frame while colliding
-function Component:OnCollisionStay(other_actor)
+function Component:OnCollisionStay(collision)
     -- Apply damage over time, etc.
 end
 
 -- Called when a collision ends
-function Component:OnCollisionExit(other_actor)
-    Debug.Log("Stopped colliding with: " .. other_actor:GetName())
+function Component:OnCollisionExit(collision)
+    local other = collision.other
+    Debug.Log("Stopped colliding with: " .. other:GetName())
 end
 
 -- Called when a trigger overlap starts
-function Component:OnTriggerEnter(other_actor)
-    Debug.Log("Entered trigger: " .. other_actor:GetName())
+function Component:OnTriggerEnter(collision)
+    local other = collision.other
+    Debug.Log("Entered trigger: " .. other:GetName())
 end
 
 -- Called every frame while overlapping a trigger
-function Component:OnTriggerStay(other_actor)
+function Component:OnTriggerStay(collision)
     -- Powerup zone, damage zone, etc.
 end
 
 -- Called when a trigger overlap ends
-function Component:OnTriggerExit(other_actor)
-    Debug.Log("Left trigger: " .. other_actor:GetName())
+function Component:OnTriggerExit(collision)
+    local other = collision.other
+    Debug.Log("Left trigger: " .. other:GetName())
 end
 ```
+
+**Notes**:
+- `OnCollisionStay` / `OnTriggerStay` are called every physics step while contact persists.
+- A Stay callback may run in the same frame as the corresponding Enter callback.
+
+**Collision data table fields**:
+- `other`: Actor reference for the other body
+- `point`: Collision point (Vec2), sentinel `(-999, -999)` for trigger events and exits
+- `normal`: Collision normal (Vec2), sentinel `(-999, -999)` for trigger events and exits
+- `relative_velocity`: Relative velocity (Vec2) between bodies
 
 ### Component Properties
 
@@ -1076,14 +1093,16 @@ function PlayerController:OnUpdate()
     Image.Draw("player.png", pos.x, pos.y)
 end
 
-function PlayerController:OnCollisionEnter(other)
+function PlayerController:OnCollisionEnter(collision)
+    local other = collision.other
     -- Check if we landed on the ground
     if other:GetName() == "Ground" then
         self.is_grounded = true
     end
 end
 
-function PlayerController:OnCollisionExit(other)
+function PlayerController:OnCollisionExit(collision)
+    local other = collision.other
     if other:GetName() == "Ground" then
         self.is_grounded = false
     end

@@ -8,8 +8,7 @@
 //  Created by Jack Gaffney
 //
 
-#ifndef COMPONENTDB_HPP
-#define COMPONENTDB_HPP
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -44,7 +43,7 @@ class Actor;
  * - Input: GetKey(), GetMousePosition(), etc.
  * - Image: Draw(), DrawUI(), DrawPixel()
  * - Text: Draw()
- * - Audio: PlayChannel(), HaltChannel(), SetVolume()
+ * - Audio: Play(), Halt(), SetVolume()
  * - Rigidbody: GetPosition(), SetVelocity(), AddForce(), etc.
  * - Application: Quit(), Sleep(), GetFrame(), OpenURL()
  * - Debug: Log(), LogError()
@@ -60,10 +59,7 @@ public:
      * @brief Destructor that closes the Lua state.
      */
     ~ComponentDB() {
-        if (L) {
-            lua_close(L);
-            L = nullptr;
-        }
+        Shutdown();
     }
 
     /**
@@ -79,6 +75,11 @@ public:
      * @throws std::runtime_error if Lua state creation fails
      */
     static void Init();
+
+    /**
+     * @brief Shuts down the Lua state and clears caches.
+     */
+    static void Shutdown();
 
     /**
      * @brief Loads components from a JSON definition and attaches them to an actor.
@@ -101,18 +102,14 @@ public:
      */
     static std::shared_ptr<luabridge::LuaRef> CreateComponent(const std::string& type, const std::string& comp_key);
 
-    /// Global component database: component_key -> LuaRef (currently unused?)
-    inline static std::unordered_map<std::string, std::shared_ptr<luabridge::LuaRef>> CDB;
-
     /// Component type cache: type_name -> LuaRef to prototype table
     inline static std::unordered_map<std::string, std::shared_ptr<luabridge::LuaRef>> componentTypeCache;
 
-    /**
-     * @brief Logs a message from C++ to stdout (exposed to Lua as Debug.Log()).
-     *
-     * @param message Message to log
-     */
-    static void CPPLog(std::string message);
+    /// Logs a message from Lua via Debug.Log().
+    static void CPPLog(const std::string& message);
+
+    /// Logs an error from Lua via Debug.LogError().
+    static void CPPLogError(const std::string& message);
 
     /**
      * @brief Gets the global Lua state.
@@ -157,4 +154,3 @@ private:
     static void overrideRigidbodyfValue(luabridge::LuaRef& table, const std::string & name, const rapidjson::Value& prop_value);
 };
 
-#endif // COMPONENTDB_HPP

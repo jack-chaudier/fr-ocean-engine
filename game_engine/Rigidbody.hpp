@@ -8,8 +8,7 @@
 //  Created by Jack Gaffney on 4/13/25.
 //
 
-#ifndef Rigidbody_hpp
-#define Rigidbody_hpp
+#pragma once
 
 #include <string>
 #include "box2d/box2d.h"
@@ -32,12 +31,12 @@
  * - "static": Immovable, infinite mass (e.g., walls, floors)
  *
  * Collision Callbacks (Lua):
- * - OnCollisionEnter(other_actor): Called when collision starts
- * - OnCollisionStay(other_actor): Called every frame while colliding
- * - OnCollisionExit(other_actor): Called when collision ends
- * - OnTriggerEnter(other_actor): Called when trigger overlap starts
- * - OnTriggerStay(other_actor): Called every frame while overlapping
- * - OnTriggerExit(other_actor): Called when trigger overlap ends
+ * - OnCollisionEnter(collision): Called when collision starts
+ * - OnCollisionStay(collision): Called every frame while colliding
+ * - OnCollisionExit(collision): Called when collision ends
+ * - OnTriggerEnter(collision): Called when trigger overlap starts
+ * - OnTriggerStay(collision): Called every frame while overlapping
+ * - OnTriggerExit(collision): Called when trigger overlap ends
  *
  * Usage (from Lua component):
  * ```lua
@@ -214,13 +213,14 @@ public:
     std::string body_type = "dynamic";          ///< Body type: "dynamic", "kinematic", "static"
     std::string collider_type = "box";          ///< Collider shape: "box", "circle"
     std::string trigger_type = "box";           ///< Trigger shape: "box", "circle"
+    std::string collision_layer = "default";    ///< Collision layer name for physics filtering
 
     bool precise = true;                        ///< Use continuous collision detection (prevents tunneling)
     bool has_collider = true;                   ///< Enable collision shape
     bool has_trigger = true;                    ///< Enable trigger/sensor shape
 
 private:
+    void CreateFixtures(Actor* owner);
     b2Body* body = nullptr;                     ///< Box2D body handle
 };
 
-#endif /* Rigidbody_hpp */
